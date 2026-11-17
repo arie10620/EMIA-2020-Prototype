@@ -8,6 +8,10 @@ A React + TypeScript mobile campus friendship prototype. All art is original SVG
 npm install
 npm run dev
 ```
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
 
 Open the localhost URL printed by Vite. For a production build, run `npm run build`; serve the generated `dist` folder over HTTP. Run deterministic data and movement checks with `npm test` (Node 22.6 or newer).
 
