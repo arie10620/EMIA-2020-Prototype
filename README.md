@@ -74,3 +74,17 @@ Both the demo profile shortcut and all presentation chapters use **Firebird Chan
 The **Add a quest** demo chapter opens the real quest form, types an activity, venue, time and details, selects two requested participants and a Table tennis interest tag, and posts the quest. It repeats after 18 seconds with fresh sample data. Pausing and manual interaction work as on the other chapters, and real saved quests remain untouched.
 
 Quest notification banners now appear directly below the location dropdown as an overlay, without moving the lobby. Quest, Student, and Alert popups share a full-app dimmed backdrop and one clipped, rounded content surface, eliminating the inset corner artifacts.
+
+
+## Lobby discussions
+
+Campus shows only the newest post below the location selector. Hide discussions collapses the preview to a small Show discussions button; this choice stays in effect while navigating the app. Classrooms show only the selected exact lecture section; Library and Dorm show your joined communities. View all or a post preview opens the shared forum over the lobby. The duplicate scene Noticeboard shortcut has been removed. Selecting a post opens only that thread and its comments; All discussions returns to the feed. Post to classroom starts a composer for that section; campus spaces let you choose a joined community. Posts, likes, and replies share the existing browser-persisted forum store with Chats > Forums.
+
+Posts created from the lobby return you to the room with a speech bubble above your avatar. The newest accessible post from an author present in that room appears for 15 seconds, with at most one bubble visible. Selecting it opens the original forum thread and its replies. Posts retain a stable author ID and their room; classroom posts stay tied to their exact section. Interest posts created from Chats remain in their community without broadcasting into an unrelated room. Bubbles do not duplicate posts or create a separate chat history. Other students remain fictional; there is no multi-user delivery backend.
+
+
+## Fictional forum activity
+
+Normal lobby use seeds three fictional posts per room and attempts a new random student post after about two seconds, then every 30-45 seconds while the room is open. Posts use nearby student identities and joined communities, with occasional sample replies. A 25-second quiet period after a recent room post prevents immediate interruptions. Posting pauses while another screen, chat, or popup is open. History is limited to eight fictional posts per room (or fewer when its sample topics run out), preserving user posts, replies, and likes. Rooms without an accessible community do not generate posts.
+
+The Lobby walkthrough chapter scripts student posts as it visits the classroom, Library, and Dorm. Demo chapters start with isolated fictional forum history; playback controls govern scripted posts, and exiting restores the saved real session. These posts are local sample data, not network activity.
