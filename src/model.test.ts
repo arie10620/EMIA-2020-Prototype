@@ -1,4 +1,4 @@
-import {demoFixture,demoTitles} from './demoPlayback.ts';
+import {alexThread,demoFixture,demoScenarios} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {courses,interests,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
@@ -16,19 +16,14 @@ test('Scripted responses follow topics with a friendly fallback',()=>{assert.mat
 
 test('Every redesigned room keeps player and peer spawn positions clear of furniture',()=>{for(const kind of ['Classroom','Library','Dorm'] as const){assert.ok(walkable({x:3,y:4.8},obstacles[kind]),kind+' user spawn');for(const pos of roomPositions[kind])assert.ok(walkable(pos,obstacles[kind]),kind+' peer spawn '+JSON.stringify(pos));}});
 
-test('Demo replay fixtures isolate quest, profile, class, and conversation progress',()=>{const first=demoFixture(6,initialGame);const next=joinQuest(first.game,'table-tennis');assert.equal(next.joined.length,1);assert.equal(initialGame.joined.length,0);first.profile.name='Changed in demo';first.profile.classes.push('COMP 2011 · L3');first.threads['example']={status:'accepted',acceptedAt:0,messages:[{text:'Demo only',own:true}]};const replay=demoFixture(6,initialGame);assert.equal(replay.profile.name,'Firebird Chan');assert.deepEqual(replay.profile.classes,['COMP 1021 · L1']);assert.deepEqual(replay.threads,{});assert.equal(replay.game.joined.length,0);assert.equal(replay.game.quests.find(q=>q.id==='table-tennis')!.participants.length,2);});
 
-test('The demo keeps Firebird Chan and the scarf across every feature and uses one introduction/chat chapter',()=>{for(let slide=1;slide<demoTitles.length;slide++){const fixture=demoFixture(slide,initialGame);assert.equal(fixture.profile.name,'Firebird Chan');assert.equal(fixture.profile.avatar.type,'Firebird');assert.equal(fixture.profile.avatar.accessory,'Scarf');}assert.equal(demoTitles.length,9);assert.equal(demoTitles[5],'Introduction & Chat');});
 
 import {availableForums,canAccessForum,addForumPost,addForumReply,meetingTopics,toggleForumLike,forumFeed,communityName} from './forums.ts';
-import {demoEvents,demoDurations} from './demoPlayback.ts';
 test('Forums are limited to selected interests and exact lecture sections',()=>{const p={...demo,interests:['Hiking','Hiking'],classes:['COMP 1021 · L1']};assert.equal(availableForums(p).length,2);assert.ok(canAccessForum(p,'interest:Hiking'));assert.ok(canAccessForum(p,'class:COMP 1021 · L1'));assert.equal(canAccessForum(p,'class:COMP 1021 · L2'),false);assert.equal(canAccessForum(p,'interest:Cooking'),false);assert.deepEqual(availableForums({...p,interests:[],classes:[]}),[]);});
 test('Forum posting and replies lose access as soon as membership is removed',()=>{const p={...demo,interests:['Hiking'],classes:[]},forum=availableForums(p)[0],post={id:'one',title:'Weekend hike',text:'Who is coming?',author:p.name,replies:[]};const store=addForumPost({},p,forum,post);assert.equal(store[forum.id].length,1);const replied=addForumReply(store,p,forum.id,post.id,'Count me in');assert.equal(replied[forum.id][0].replies[0].author,p.name);const removed={...p,interests:[]};assert.equal(addForumPost(store,removed,forum,post),store);assert.equal(addForumReply(store,removed,forum.id,post.id,'No access'),store);assert.equal(addForumPost(store,p,forum,{...post,text:' '}),store);});
 test('Face to face topics reflect shared interests and provide fallback topics',()=>{const p=eligible('Library')[0];const profile={...demo,interests:[p.interests[0]]};assert.ok(meetingTopics(profile,p)[0].includes(p.interests[0].toLowerCase()));assert.ok(meetingTopics({...demo,interests:[],classes:[]},p).length>=2);});
-test('Every demo chapter has a complete looping timeline and the shared forum post flow',()=>{assert.equal(demoTitles.length,demoDurations.length);for(let i=0;i<demoTitles.length;i++){assert.ok(demoEvents(i).length);assert.ok(demoEvents(i).every(e=>e.at<demoDurations[i]));}assert.ok(demoEvents(5).some(e=>e.action==='meet'));assert.ok(demoEvents(8).some(e=>e.action==='forum-post'));});
 
 test('Titled posts preserve descriptions and likes toggle once per member',()=>{const profile={...demo,interests:['Hiking']},forum=availableForums(profile)[0],post={id:'social',title:'Friday hike',text:'A hike this Friday?',author:profile.name,replies:[]};const store=addForumPost({},profile,forum,post);assert.equal(store[forum.id][0].title,'Friday hike');assert.equal(store[forum.id][0].text,post.text);assert.equal(addForumPost(store,profile,forum,{...post,title:' '}),store);const liked=toggleForumLike(store,profile,forum.id,post.id);assert.deepEqual(liked[forum.id][0].likedBy,['you']);assert.deepEqual(toggleForumLike(liked,profile,forum.id,post.id)[forum.id][0].likedBy,[]);assert.equal(toggleForumLike(store,{...profile,interests:[]},forum.id,post.id),store);assert.equal(toggleForumLike(store,profile,forum.id,'missing'),store);assert.equal(store[forum.id][0].likedBy,undefined);});
-test('Forums demo shows the same post, like, and comment flow',()=>{const actions=demoEvents(8).map(e=>e.action);for(const action of ['forum-post','forum-like','forum-comments','forum-comment-post'])assert.ok(actions.includes(action as typeof actions[number]));assert.equal(actions.includes('forum-title' as typeof actions[number]),true);});
 
 test('Community feed combines only joined Circles and exact Classrooms, newest first',()=>{const profile={...demo,interests:['Hiking'],classes:['COMP 1021 ? L1']};const make=(id:string,createdAt:number)=>({id,text:id,author:'Sam',createdAt,replies:[]});const store={'interest:Hiking':[make('hike',10)],'class:COMP 1021 ? L1':[make('lecture',20)],'class:COMP 1021 ? L2':[make('other-section',30)],'interest:Cooking':[make('cooking',40)]};assert.deepEqual(forumFeed(profile,store).map(e=>e.post.id),['lecture','hike']);assert.deepEqual(forumFeed(profile,store,'interest:Hiking').map(e=>e.post.id),['hike']);assert.deepEqual(forumFeed(profile,store,'interest:Cooking'),[]);assert.equal(communityName(availableForums(profile)[0]),'Hiking Circle');assert.equal(communityName(availableForums(profile)[1]),'COMP 1021 ? L1 Classroom');});
 
@@ -87,8 +82,31 @@ test('Random fictional posts use present students, respect sections, and have a 
  const empty={};assert.equal(simulateRoomPost(empty,{...profile,interests:[],classes:[]},'Library',present,now),empty);
  assert.equal(simulateRoomPost(empty,profile,'Library',[],now),empty);
 });
-test('Lobby walkthrough includes fictional room posts across its location changes',()=>{
- const actions=demoEvents(4);assert.equal(actions.filter(event=>event.action==='room-post').length,3);
+test('Each fictional persona starts a fresh scenario with an available quest',()=>{
+ assert.deepEqual(demoScenarios.map(({name,year})=>[name,year]),[['Jamie',1],['Sam',2],['Alex',3]]);
+ for(const scenario of demoScenarios){
+  const fixture=demoFixture(scenario,initialGame,100_000);
+  assert.equal(fixture.profile.name,scenario.name);
+  const quest=fixture.game.quests.find(quest=>quest.lobby===fixture.location)!;
+  assert.ok(quest);
+  assert.ok(scenario.events.every((event,index)=>event.at<scenario.duration&&(!index||event.at>scenario.events[index-1].at)));
+  assert.ok(scenario.openerAt<scenario.duration);
+  fixture.profile.name='Edited';
+  fixture.profile.classes.push('COMP 2011 · L3');
+  fixture.threads['example']={status:'accepted',acceptedAt:0,messages:[]};
+  fixture.game=joinQuest(fixture.game,quest.id);
+  const replay=demoFixture(scenario,initialGame,100_000);
+  assert.equal(replay.profile.name,scenario.name);
+  assert.ok(!replay.profile.classes.includes('COMP 2011 · L3'));
+  assert.deepEqual(replay.threads,{});
+  assert.deepEqual(replay.game.joined,[]);
+ }
+ const alex=demoFixture(demoScenarios[2],initialGame,100_000);
+ const thread=alex.forumStore[`class:${alex.location}`][0];
+ assert.equal(thread.id,alexThread);
+ assert.equal(thread.author,eligible(alex.location).find(peer=>peer.id===thread.authorId)?.name);
+ assert.deepEqual(thread.replies,[]);
+ assert.ok(!initialGame.quests.some(quest=>quest.id==='demo-ai-review'));
 });
 
 

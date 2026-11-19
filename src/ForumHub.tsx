@@ -1,22 +1,28 @@
-﻿import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import Popup from './Popup';
 import {Plus,BookOpen,CircleDot,Heart,Network,MessageCircle,Send,X} from 'lucide-react';
 import Avatar from './Avatar';
 import {availableForums,communityName,forumFeed,addForumPost,addForumReply,toggleForumLike,type ForumStore} from './forums';
 import type {Profile} from './model';
-export type ForumAutomation={id:number;action:'feed'|'open'|'compose'|'title'|'body'|'post'|'like'|'comments'|'comment-body'|'comment-post';value?:string};
+export type ForumAutomation={action:'draft';postId:string;text:string}|{action:'reply';postId:string};
 export default function Forums({profile,store,onChange,onEdit,automation,initialCommunity=null,initialPost=null,startComposing=false,embedded=false,postLocation,onPublished,now}:{profile:Profile;store:ForumStore;onChange:(store:ForumStore)=>void;onEdit:(step:number)=>void;automation?:ForumAutomation|null;initialCommunity?:string|null;initialPost?:string|null;startComposing?:boolean;embedded?:boolean;postLocation?:string;onPublished?:()=>void;now?:number}){
  const [activePost,setActivePost]=useState<string|null>(initialPost);
  const [selected,setSelected]=useState<string|null>(initialCommunity),[composing,setComposing]=useState(startComposing),[destination,setDestination]=useState(''),[title,setTitle]=useState(''),[body,setBody]=useState(''),[expanded,setExpanded]=useState<string[]>(initialPost?[initialPost]:[]),[drafts,setDrafts]=useState<Record<string,string>>({});
  const targetPost=useRef<HTMLElement|null>(null);
  useEffect(()=>{targetPost.current?.scrollIntoView({block:'start'});},[]);
- const trigger=useRef<HTMLButtonElement>(null),first=useRef<HTMLElement|null>(null),lastCue=useRef<number|null>(null);
+ const trigger=useRef<HTMLButtonElement>(null),first=useRef<HTMLElement|null>(null);
  const forums=availableForums(profile),filter=forums.find(f=>f.id===selected),forum=forums.find(f=>f.id===(filter?.id||destination))||forums[0],feed=forumFeed(profile,store,filter?.id||null).filter(entry=>!activePost||entry.post.id===activePost),posts=feed.map(entry=>entry.post);
  const publish=()=>{if(!forum||!title.trim()||!body.trim())return;onChange(addForumPost(store,profile,forum,{id:crypto.randomUUID(),title:title.trim(),text:body.trim(),author:profile.name,authorId:'you',room:forum.kind==='class'?forum.name:postLocation,createdAt:now??Date.now(),likedBy:[],replies:[]}));setTitle('');setBody('');setComposing(false);setActivePost(null);onPublished?.();};
  const comment=(id:string,community=feed.find(e=>e.post.id===id)?.forum.id)=>{if(!community||!drafts[id]?.trim())return;onChange(addForumReply(store,profile,community,id,drafts[id]));setDrafts(d=>({...d,[id]:''}));};
- useEffect(()=>{if(!automation||lastCue.current===automation.id)return;lastCue.current=automation.id;const post=posts[0];switch(automation.action){case 'feed':setSelected(null);break;case 'open':setSelected(availableForums(profile)[0]?.id||null);break;case 'compose':setComposing(true);break;case 'title':setTitle(automation.value||'');break;case 'body':setBody(automation.value||'');break;case 'post':publish();break;case 'like':if(forum&&post){onChange(toggleForumLike(store,profile,forum.id,post.id));first.current?.scrollIntoView({block:'nearest'});}break;case 'comments':if(post)setExpanded([post.id]);break;case 'comment-body':if(post)setDrafts(d=>({...d,[post.id]:automation.value||''}));break;case 'comment-post':if(post)comment(post.id);break;}},[automation?.id]);
- useEffect(()=>{if(automation&&['comments','comment-body','comment-post'].includes(automation.action))first.current?.querySelector('.social-comment-compose')?.scrollIntoView({block:'nearest'});},[expanded,drafts,automation?.id]);
+ useEffect(()=>{
+  if(!automation||activePost!==automation.postId)return;
+  if(automation.action==='draft')setDrafts(previous=>({...previous,[automation.postId]:automation.text}));
+  else comment(automation.postId);
+ },[automation]);
+ useEffect(()=>{
+  if(automation&&activePost===automation.postId)first.current?.querySelector('.social-comment-compose')?.scrollIntoView({block:'nearest'});
+ },[automation,drafts,activePost]);
  const composerForm=forum?(<form className="social-composer" onSubmit={e=>{e.preventDefault();publish();}}><div className="social-identity"><Avatar data={profile.avatar} size={38}/><strong>{profile.name}</strong><span>New post</span></div><label className="community-destination">Post to<select aria-label="Post community" value={forum.id} onChange={e=>setDestination(e.target.value)} disabled={!!filter}>{forums.map(f=><option key={f.id} value={f.id}>{communityName(f)}</option>)}</select></label><label className="social-field-label" htmlFor="forum-post-title">Title</label><input autoFocus={embedded} id="forum-post-title" aria-label="Post title" placeholder="Give your topic a title" maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/><label className="social-field-label" htmlFor="forum-post-body">Description</label><textarea id="forum-post-body" aria-label="Post description" placeholder={`What’s happening in ${forum.name}?`} maxLength={1500} value={body} onChange={e=>setBody(e.target.value)}/><div className="social-compose-footer"><small>{body.length}/1500</small><button className="social-publish" disabled={!title.trim()||!body.trim()}>Post<Send size={15}/></button></div></form>):null;
  if(composing&&embedded)return <section className="forum-inline-composer"><button className="text-button" onClick={()=>setComposing(false)}>&larr; Back to discussions</button>{composerForm}</section>;
  if(!forums.length)return <div className="forum-empty"><Network size={32}/><h2>Find your communities</h2><p>Choose an interest to join a Circle, or a lecture section to join its Classroom.</p><button className="primary" onClick={()=>onEdit(2)}>Choose interests<Heart size={16}/></button><button className="text-button" onClick={()=>onEdit(3)}>Choose classes</button></div>;
