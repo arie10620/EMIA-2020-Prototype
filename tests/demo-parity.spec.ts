@@ -113,6 +113,72 @@ for(const [width,height] of [[320,568],[390,844],[844,390],[1440,1000]]){
 }
 
 
+test('desktop presentation shows the active persona and steps beside the phone dialogs',async({page})=>{
+ await page.setViewportSize({width:1023,height:800});
+ await start(page);
+ const phone=page.locator('.phone'),panel=page.locator('.demo-scenario-panel');
+ await expect(panel).toHaveCount(0);
+ await enterDemo(page);
+ await expect(panel).toBeHidden();
+ await page.setViewportSize({width:1024,height:800});
+ await expect(page.getByRole('complementary',{name:'User scenario and profile'})).toBeVisible();
+
+ const current=panel.locator('[aria-current="step"]');
+ const checkLayout=async(title:string)=>{
+  const dialog=phone.getByRole('dialog',{name:title,exact:true});
+  await expect(dialog).toBeVisible();
+  const [profileBox,phoneBox,dialogBox]=await Promise.all([panel.boundingBox(),phone.boundingBox(),dialog.boundingBox()]);
+  expect(profileBox).not.toBeNull();
+  expect(phoneBox).not.toBeNull();
+  expect(dialogBox).not.toBeNull();
+  expect(profileBox!.x).toBeGreaterThanOrEqual(0);
+  expect(profileBox!.x+profileBox!.width).toBeLessThan(phoneBox!.x);
+  expect(dialogBox!.x).toBeGreaterThanOrEqual(phoneBox!.x);
+  expect(dialogBox!.x+dialogBox!.width).toBeLessThanOrEqual(phoneBox!.x+phoneBox!.width);
+  expect(dialogBox!.y+dialogBox!.height).toBeLessThanOrEqual(800);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  return dialog;
+ };
+
+ await expect(panel.getByRole('heading',{name:'Jamie Year 1'})).toBeVisible();
+ await expect(panel.getByRole('listitem')).toHaveCount(3);
+ await expect(current).toHaveText('Open the quest board');
+ await scenario(page,0,3000);
+ await expect(current).toHaveText('Check the time and venue');
+ const quests=await checkLayout('Lobby quests');
+ const close=quests.getByRole('button',{name:'Close lobby quests'});
+ await expect(close).toBeFocused();
+ await panel.getByRole('heading',{name:'Scenario goal'}).click();
+ await expect(phone).toHaveAttribute('data-demo-playing','true');
+ await expect(close).toBeFocused();
+ await page.keyboard.press('Shift+Tab');
+ await expect(quests.getByRole('button',{name:'Accept quest'}).last()).toBeFocused();
+ await page.keyboard.press('Tab');
+ await expect(close).toBeFocused();
+ await page.keyboard.press('Escape');
+ await expect(quests).toHaveCount(0);
+ await expect(phone).toHaveAttribute('data-demo-playing','false');
+ await page.clock.runFor(3000);
+ await expect(current).toHaveText('Check the time and venue');
+
+ await scenario(page,1,11900);
+ await expect(panel.getByRole('heading',{name:'Sam Year 2'})).toBeVisible();
+ await expect(current).toHaveText('Open Meet F2F');
+ await checkLayout('Meet Sophie face to face');
+
+ await scenario(page,2,11800);
+ await expect(panel.getByRole('heading',{name:'Alex Year 3'})).toBeVisible();
+ await expect(current).toHaveText('Reply to the thread');
+ await checkLayout('Classroom discussions');
+
+ await page.getByRole('button',{name:'Replay current scenario',exact:true}).click();
+ await expect(current).toHaveText('Find the lecture meetup');
+ await page.getByRole('button',{name:'Exit demo walkthrough',exact:true}).click();
+ await expect(panel).toHaveCount(0);
+ await expect(phone).toHaveAttribute('data-session','live');
+});
+
+
 test('normal onboarding and shared-class icebreakers use the same controls as the demo',async({page})=>{
  await page.clock.install();await page.clock.pauseAt(Date.now()+1000);await page.goto('./');
  await page.getByPlaceholder('Your display name').fill('Real Student');await page.getByPlaceholder('Tell classmates about yourself').fill('Coffee and photos after class.');await page.getByRole('button',{name:'Continue',exact:true}).click();

@@ -17,7 +17,7 @@ Open the localhost URL printed by Vite. For a production build, run `npm run bui
 
 ## Scenario walkthrough with fictional personas
 
-Open **Profile → Scenario walkthrough with fictional personas**. The demo starts with Jamie. Use the scenario picker or the arrow buttons to switch personas. Each scenario loops independently, and you can pause or replay it. Open **Scenario notes** for the shared task, the setup, and the question to test with real students.
+Open **Profile → Scenario walkthrough with fictional personas**. The demo starts with Jamie. Use the scenario picker or the arrow buttons to switch personas. Each scenario loops independently, and you can pause or replay it. Open **Scenario notes** for the shared task, the setup, and the question to test with real students. On screens 1024px and wider, Demo Mode shows the active student profile, scenario goal, and walkthrough steps beside the phone. The step highlight follows playback and holds while paused.
 
 **Shared task**
 

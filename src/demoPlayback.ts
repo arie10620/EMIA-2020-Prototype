@@ -12,10 +12,16 @@ type DemoEvent =
  | {at:number;action:'focus-quest'|'accept-quest';questId:string}
  | {at:number;action:'forum-draft';text:string};
 
-type Scenario = {
+type ScenarioStep = {label:string; startsOn?:DemoEvent['action']|'arrival'};
+
+export type Scenario = {
  name:string;
  year:number;
  title:string;
+ bio:string;
+ traits:string[];
+ goal:string;
+ steps:ScenarioStep[];
  setup:string;
  hypothesis:string;
  testQuestion:string;
@@ -39,6 +45,14 @@ const alexQuest:Quest = {
 export const demoScenarios:Scenario[] = [
  {
   name:'Jamie',year:1,title:'Table tennis',
+  bio:'Jamie enjoys table tennis and worries about interrupting a group that already knows each other.',
+  traits:['Table tennis','New to campus'],
+  goal:'Find a casual meetup with classmates and think of something to say on arrival.',
+  steps:[
+   {label:'Open the quest board'},
+   {label:'Check the time and venue',startsOn:'focus-quest'},
+   {label:'Try an arrival opener',startsOn:'arrival'},
+  ],
   setup:'Jamie wants to meet classmates but worries about interrupting a group. Jamie checks the time and venue for a table-tennis quest.',
   hypothesis:'A shared activity gives Jamie a reason to turn up. Jamie might still hesitate if it’s unclear whether the others already know one another.',
   testQuestion:'Can students find a meetup they’d join, and can they tell whether newcomers are welcome?',
@@ -48,6 +62,14 @@ export const demoScenarios:Scenario[] = [
  },
  {
   name:'Sam',year:2,title:'Meet F2F',
+  bio:'Sam wants to connect with someone from the same programming lecture.',
+  traits:['Programming','COMP 1021 · L1'],
+  goal:'Find a study partner and get a class-specific opener for meeting in person.',
+  steps:[
+   {label:'Join Python practice'},
+   {label:'Say hello to a classmate',startsOn:'students'},
+   {label:'Open Meet F2F',startsOn:'meet'},
+  ],
   setup:'Sam wants a study partner from the same lecture. Sam finds a Python practice quest and opens Meet F2F for something to say.',
   hypothesis:'A prompt tied to a shared lecture could give Sam a specific way to start the conversation.',
   testQuestion:'Would students feel comfortable saying a suggested shared-class opener out loud?',
@@ -60,6 +82,14 @@ export const demoScenarios:Scenario[] = [
  },
  {
   name:'Alex',year:3,title:'Class forum',
+  bio:'Alex is open to meeting classmates and rarely checks campus apps.',
+  traits:['AI coursework','COMP 2211 · L1'],
+  goal:'Find a class meetup and join a group conversation before meeting in person.',
+  steps:[
+   {label:'Find the lecture meetup'},
+   {label:'Open the classroom discussion',startsOn:'class-forum'},
+   {label:'Reply to the thread',startsOn:'forum-draft'},
+  ],
   setup:'Alex is open to meeting people but rarely checks campus apps. Alex finds an AI lecture meetup and browses the classroom forum for a discussion worth replying to.',
   hypothesis:'The forum gives Alex a way into a group conversation before approaching anyone individually.',
   testQuestion:'Does following a classroom discussion give students a reason to open USTogether again?',
