@@ -93,3 +93,10 @@ The Lobby walkthrough chapter scripts student posts as it visits the classroom, 
 ## Face-to-face conversation starters
 
 Open a personal conversation from Chats and select **Meet f2f** in its header (also available from the character chat's people icon). The popup suggests conversation starters from shared interests and, when both students belong to the same exact lecture section, their shared class. A class topic stays visible even with many shared interests. Campus icebreakers fill remaining space when there is less in common. Suggestions are generated locally from profile data.
+
+
+## Responsive phone layout
+
+Phone screens use the full available viewport with notch and home-indicator insets, fluid side spacing, larger touch controls, and 16px form text. Short screens keep the main actions and message composer visible while content scrolls inside the app. Landscape phones show campus controls beside the room and navigation along the right edge. Character chat avoids that navigation rail. Desktop keeps its framed layout.
+
+Browser viewport checks cover widths from 320 to 440px, landscape sizes from 568?320 to 932?430, and the desktop frame in Chromium and WebKit. Real iOS and Android keyboard behavior should also be checked on devices.

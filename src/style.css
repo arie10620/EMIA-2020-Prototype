@@ -86,19 +86,156 @@
 .room-post-bubble{position:relative;width:140px;max-width:140px;display:flex;flex-direction:column;gap:5px;padding:8px 10px;margin-bottom:5px;border:1px solid #aebe96;border-radius:10px;background:#fffdf1;color:#415a3e;box-shadow:1px 3px 0 #536b3922;text-align:left;white-space:normal;cursor:pointer}.room-post-bubble:after{content:'';position:absolute;bottom:-5px;left:calc(50% - 4px);width:7px;height:7px;background:#fffdf1;border-right:1px solid #aebe96;border-bottom:1px solid #aebe96;transform:rotate(45deg)}.room-post-bubble>span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:11px;line-height:1.35}.room-post-bubble>small{display:flex;align-items:center;gap:3px;font-size:9px;color:#768b64}.room-post-bubble:hover{border-color:#698753;background:#f4f8e9}.room-post-bubble:focus-visible{outline:2px solid #658573;outline-offset:2px}
 
 
-/* Phones use the full available screen; desktop keeps the framed preview. */
+/* Responsive phone shell. Desktop retains the framed preview above. */
 @media (max-width:600px), (pointer:coarse) and (max-width:1000px) and (max-height:600px){
  html,body,#root{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .desktop-stage{width:100%;height:100%;min-height:0;padding:0;display:block;background:#fbfaf4}
  .desktop-note,.desktop-right{display:none}
- .phone{width:100%;max-width:none;height:100vh;height:var(--mobile-app-height,100dvh);min-height:0;margin:0;border:0;border-radius:0;box-shadow:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
- header{height:65px;padding-top:0}
- nav{height:66px;padding-bottom:8px}
- .chat-compose{padding-bottom:16px}
+ .phone{--mobile-gutter:clamp(16px,4.6vw,24px);--mobile-header:64px;width:100%;max-width:none;height:100vh;height:var(--mobile-app-height,100dvh);min-height:0;margin:0;border:0;border-radius:0;box-shadow:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+ .phone>header{height:var(--mobile-header);padding:0 var(--mobile-gutter);gap:8px}
+ .brand{font-size:clamp(16px,4.4vw,20px);white-space:nowrap;flex-shrink:0}
+ .brand-mark{width:25px;height:27px;margin-right:6px}
+ .header-actions{gap:8px;min-width:0}
+ .header-tools{gap:3px}
+ .header-tools>button{width:44px;height:44px;border-radius:12px}
+ .header-profile{width:44px;min-width:44px;height:44px;position:relative;justify-content:center}
+ .header-profile-info{position:absolute;right:-2px;bottom:-1px;max-width:none}
+ .header-profile-info b{display:none}
+ .header-profile-info small{font-size:9px;line-height:1;padding:3px 4px;border-radius:4px}
+ .header-profile .header-avatar{width:36px;height:36px}
+ .phone>nav{height:70px;padding:6px 12px 8px}
+ .phone>nav button{min-height:44px;font-size:12px;gap:5px}
+ .phone>nav .active:before{top:-7px;width:30px;height:3px}
  .main-scroll{min-height:0;min-width:0;overscroll-behavior-y:contain}
- .onboarding-content,.message-scroll,.popup-scroll{overscroll-behavior-y:contain}
- .onboarding-footer,.chat-compose{flex-shrink:0}
- input,textarea,select{font-size:16px}
- .popup-backdrop{padding-top:calc(75px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));padding-left:calc(12px + env(safe-area-inset-left,0px));padding-right:calc(12px + env(safe-area-inset-right,0px))}
- .phone:has(.demo-strip) .popup-backdrop{padding-top:calc(158px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+ .onboarding-content,.message-scroll,.popup-scroll{min-height:0;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+ .onboarding-content{padding:20px var(--mobile-gutter)}
+ .onboarding-top{padding:14px var(--mobile-gutter) 10px}
+ .onboarding-footer{padding:10px var(--mobile-gutter) 14px}
+ .onboarding-footer,.chat-compose,.chat-heading{flex-shrink:0}
+ .onboarding-content h1{font-size:clamp(27px,7.6vw,34px)}
+ .phone .icon-button{width:44px;height:44px;flex-shrink:0;border-radius:12px}
+ .phone :is(input,textarea,select){font-size:16px}
+ .phone input::placeholder,.phone textarea::placeholder{font-size:14px}
+ .phone input,.phone select{min-height:44px}
+ .phone .primary{min-height:48px;font-size:15px;border-radius:13px}
+ .phone .text-button{min-height:44px;font-size:13px}
+ .interest-grid{gap:8px;margin:20px 0}
+ .phone .interest-grid button{min-height:44px;padding:10px 12px;font-size:14px;border-radius:11px}
+ .type-options{gap:7px}
+ .type-options button{min-height:72px;border-radius:12px}
+ .campus-heading{padding:16px var(--mobile-gutter) 12px;gap:8px}
+ .campus-heading h1{font-size:25px}
+ .location-label{font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .lobby-select-wrap{margin:0 var(--mobile-gutter) 12px}
+ .lobby-select-wrap select{min-height:48px;font-size:16px;border-radius:12px}
+ .lobby-select-wrap>svg{top:16px}
+ .lobby-forum{margin:0 var(--mobile-gutter) 8px;padding:8px 11px;border-radius:13px}
+ .lobby-forum-heading strong{font-size:13px}
+ .lobby-forum-actions>button{min-height:40px;min-width:40px;font-size:12px}
+ .lobby-forum-post{min-height:44px}
+ .lobby-forum-post strong{font-size:13px}
+ .lobby-forum-post small{font-size:11px}
+ .lobby-forum-collapsed{margin:0 var(--mobile-gutter) 4px}
+ .lobby-forum-collapsed button{min-height:40px;font-size:12px}
+ .phone .main-scroll>.world-tip{font-size:11px;margin:6px var(--mobile-gutter) 10px;line-height:1.4}
+ .page-pad{padding:22px var(--mobile-gutter)}
+ .conversation-row{min-height:84px}
+ .conversation-row p{font-size:14px}
+ .chat-heading{padding:10px var(--mobile-gutter);gap:9px}
+ .chat-heading h2{font-size:20px;line-height:1.2}
+ .chat-heading small{font-size:12px;margin-top:4px}
+ .meet-button{min-width:56px;min-height:48px;font-size:12px;border-radius:12px}
+ .message-scroll{padding:18px var(--mobile-gutter)}
+ .message{font-size:16px;line-height:1.5;max-width:86%;padding:11px 14px;border-radius:15px;overflow-wrap:anywhere}
+ .chat-compose{padding:10px var(--mobile-gutter) 12px}
+ .starter-scroll{gap:8px;padding-bottom:10px;overscroll-behavior-x:contain}
+ .starter-scroll button{min-height:40px;font-size:13px;padding:9px 12px}
+ .chat-compose input{min-height:48px;font-size:16px;border-radius:13px}
+ .send-button{width:48px;height:48px;flex-shrink:0;border-radius:13px}
+ .lobby-zoom button{width:44px;height:44px}
+ .lobby-zoom{border-radius:13px}
+ .world-chat-heading button{width:40px;height:40px;display:grid;place-items:center;flex-shrink:0}
+ .world-chat-heading strong{font-size:15px}
+ .world-chat form input{min-height:44px;font-size:16px}
+ .world-chat form button{width:44px;min-height:44px}
+ .world-starter{min-height:40px;font-size:13px}
+ .world-messages p{font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+ .popup-backdrop{padding:calc(var(--mobile-header) + 10px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+ .phone:has(.demo-strip) .popup-backdrop{padding-top:calc(var(--mobile-header) + 103px + env(safe-area-inset-top,0px));padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+ .popup-panel{border-radius:20px}
+ .popup-heading{padding:12px 14px;gap:8px}
+ .popup-heading h2{font-size:clamp(21px,5.7vw,25px);line-height:1.2;overflow-wrap:anywhere}
+ .popup-scroll{padding:16px 14px 20px}
+ .community-filter,.community-destination{flex-wrap:wrap;gap:8px}
+ .community-filter select,.community-destination select{flex-basis:70%;font-size:16px}
+ .social-compose-footer{gap:10px}
+ .social-publish,.social-actions button,.community-create-post{min-height:44px}
+ .topic-card{padding:14px;gap:10px;border-radius:14px}
+ .topic-card p{font-size:16px;line-height:1.5}
+}
+
+/* The narrowest phones keep every top shortcut within thumb-sized targets. */
+@media (max-width:359px){
+ .phone>header{padding-left:12px;padding-right:12px;gap:5px}
+ .brand-mark{display:none}
+ .brand{font-size:16px}
+ .header-actions{gap:5px}
+ .header-tools{gap:2px}
+ .header-tools>button{width:44px}
+ .campus-heading h1{font-size:23px}
+ .campus-heading .presence{font-size:9px;padding:5px}
+ .location-label{font-size:11px;padding-left:7px}
+ .lobby-forum-heading strong{font-size:12px}
+ .lobby-forum-actions{gap:0}
+ .lobby-forum-actions>button{min-width:36px}
+ .chat-heading{gap:6px}
+ .chat-heading>svg,.chat-heading>.avatar{width:36px;height:36px}
+}
+
+/* Compact heights include small phones and the visible space above a keyboard. */
+@media (max-width:600px) and (max-height:700px){
+ .phone{--mobile-header:56px}
+ .phone>nav{height:60px;padding-top:4px;padding-bottom:4px}
+ .phone>nav .active:before{top:-5px}
+ .campus-heading{padding-top:10px;padding-bottom:8px}
+ .lobby-select-wrap{margin-bottom:8px}
+ .lobby-forum{padding-top:3px;padding-bottom:3px;margin-bottom:4px}
+ .lobby-forum-post small{display:none}
+ .phone .main-scroll>.world-tip{margin-top:3px;margin-bottom:5px;font-size:10px}
+ .onboarding-top{padding-top:8px;padding-bottom:6px}
+ .onboarding-content{padding-top:14px;padding-bottom:14px}
+ .onboarding-footer{padding-top:8px;padding-bottom:8px}
+ .onboarding-footer>.text-button{margin-top:2px;padding:8px}
+ .chat-heading{padding-top:6px;padding-bottom:6px}
+ .chat-compose{padding-top:6px;padding-bottom:8px}
+ .starter-scroll{padding-bottom:6px}
+}
+
+/* Landscape phones put navigation beside the app and give the room its own column. */
+@media (orientation:landscape) and (pointer:coarse) and (min-width:480px) and (max-width:1000px) and (max-height:600px){
+ .phone{--mobile-header:56px;--mobile-gutter:16px}
+ .phone>nav{position:absolute;right:env(safe-area-inset-right,0px);top:calc(56px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);height:auto;width:68px;padding:8px 5px;flex-direction:column;border-top:0;border-left:1px solid #e6e9dc}
+ .phone>nav .active:before{left:-5px;top:calc(50% - 15px);width:3px;height:30px}
+ .main-scroll{margin-right:68px}
+ .main-scroll:has(.campus-heading){display:grid;grid-template-columns:minmax(220px,34%) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;column-gap:4px}
+ .campus-heading{grid-column:1;grid-row:1;padding-top:12px;padding-bottom:10px;flex-wrap:wrap}
+ .campus-heading .location-label{display:none}
+ .lobby-select-wrap{grid-column:1;grid-row:2;margin-bottom:8px}
+ .lobby-forum,.lobby-forum-collapsed{grid-column:1;grid-row:3;align-self:start;max-height:100%;overflow-y:auto}
+ .lobby-forum-heading{flex-wrap:wrap;gap:0}
+ .lobby-forum-actions{margin-left:auto}
+ .lobby-forum-post small{display:none}
+ .main-scroll:has(.campus-heading)>.scene-shell{grid-column:2;grid-row:1 / -1;height:100%;width:100%}
+ .phone .main-scroll>.world-tip{grid-column:1;grid-row:4;margin:4px 16px 10px;font-size:10px;text-align:left}
+ .onboarding-top{padding-top:6px;padding-bottom:6px}
+ .onboarding-content{padding-top:12px;padding-bottom:12px}
+ .onboarding-footer{display:flex;align-items:center;gap:12px;padding-top:8px;padding-bottom:8px}
+ .onboarding-footer>.primary{flex:1}
+ .onboarding-footer>.text-button{width:auto;max-width:40%;margin:0}
+ .popup-backdrop{padding-top:calc(64px + env(safe-area-inset-top,0px))}
+ .popup-heading{padding-top:8px;padding-bottom:8px}
+ .chat-heading{padding-top:6px;padding-bottom:6px}
+ .chat-compose{padding-top:6px;padding-bottom:8px}
+ .starter-scroll{padding-bottom:6px}
 }
