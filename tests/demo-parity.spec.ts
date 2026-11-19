@@ -99,6 +99,25 @@ test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to
 });
 
 
+test('the next arrow cycles through personas and preserves playback state',async({page})=>{
+ await page.setViewportSize({width:320,height:568});
+ await start(page);await enterDemo(page);
+ const chooser=page.getByRole('combobox',{name:'Demo scenario'});
+ const next=page.getByRole('button',{name:'Next persona',exact:true});
+ await expect(next).toBeInViewport();
+ await next.click();
+ await expect(chooser).toHaveValue('1');
+ await expect(page.getByRole('button',{name:'Play demo animation',exact:true})).toBeVisible();
+ await playFor(page,800);
+ await next.click();
+ await expect(chooser).toHaveValue('2');
+ await expect(page.getByRole('button',{name:'Pause demo animation',exact:true})).toBeVisible();
+ await expect(page.getByRole('progressbar',{name:'Alex walkthrough progress'})).toHaveAttribute('aria-valuenow','0');
+ await next.click();
+ await expect(chooser).toHaveValue('0');
+});
+
+
 test('normal hello acceptance opens chat even when the lobby remounts',async({page})=>{
  const errors=await start(page);
  await page.getByRole('button',{name:'Meet Unknown student 1',exact:true}).click();await expect(page.getByRole('dialog',{name:'Meet Unknown',exact:true})).toBeVisible();

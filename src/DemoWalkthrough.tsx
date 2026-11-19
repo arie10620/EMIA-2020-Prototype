@@ -1,5 +1,5 @@
 import {useLayoutEffect,useRef} from 'react';
-import {Pause,Play,RotateCcw,X} from 'lucide-react';
+import {ArrowRight,Pause,Play,RotateCcw,X} from 'lucide-react';
 import {demoScenarios,walkthroughTitle} from './demoPlayback';
 
 type Props = {
@@ -36,6 +36,7 @@ export default function DemoWalkthrough({index,time,playing,onSelect,onPlay,onRe
    </select>
    <button aria-label={playing?'Pause demo animation':'Play demo animation'} onClick={()=>onPlay(!playing)}>{playing?<Pause size={17}/>:<Play size={17}/>}</button>
    <button aria-label="Replay current persona" onClick={onReplay}><RotateCcw size={17}/></button>
+   <button aria-label="Next persona" title="Next persona" onClick={()=>onSelect((index+1)%demoScenarios.length)}><ArrowRight size={17}/></button>
   </div>
   <div className="demo-loop-track" role="progressbar" aria-label={`${scenario.name} walkthrough progress`} aria-valuemin={0} aria-valuemax={scenario.duration} aria-valuenow={time}>
    <span style={{width:`${Math.min(100,time/scenario.duration*100)}%`}}/>
