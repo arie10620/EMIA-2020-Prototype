@@ -33,7 +33,7 @@ function typeDraft(action:DraftAction,text:string,start:number):DemoEvent[] {
  return Array.from(text,(character,index)=>{
   draft+=character;
   const cue:DemoEvent={at,action,text:draft};
-  at+=/[.!?]/.test(character)?300:character===' '||index%8===6?200:100;
+  at+=/[.!?]/.test(character)?220:character===' '||index%8===6?120:70;
   return cue;
  });
 }
@@ -49,24 +49,12 @@ export const demoScenarios:Scenario[] = [
   events:[
    {at:1200,action:'introduction'},{at:3200,action:'hello'},{at:6800,action:'chats'},{at:8300,action:'open-chat'},
    ...typeDraft('chat-draft','Hey, are you in EMIA 2020 too?',9500),
-   {at:14000,action:'chat-send',reply:'Yeah! Still looking for a group too.'},
+   {at:12800,action:'chat-send',reply:'Yeah! Still looking for a group too.'},
    ...typeDraft('chat-draft','Want to design something for campus?',17500),
-   {at:22500,action:'chat-send',reply:'I’m in. Maybe we could make campus signs easier to follow.'},
+   {at:21100,action:'chat-send',reply:'I’m in. Maybe we could make campus signs easier to follow.'},
    ...typeDraft('chat-draft','Meet before lecture to sketch ideas?',26800),
-   {at:32000,action:'chat-send',reply:'Sounds good! See you outside the classroom.'},
+   {at:30500,action:'chat-send',reply:'Sounds good! See you outside the classroom.'},
    {at:37500,action:'meet'},
-  ],
- },
- {
-  name:'Jamie',year:1,title:'Table-tennis quest',headline:'Meet through a shared activity',
-  bio:'Jamie enjoys table tennis and worries about interrupting a group that already knows each other.',
-  traits:['Table tennis','New to campus'],
-  goal:'Find a casual meetup and accept a quest with an open spot.',
-  highlights:['Receive a matching quest notification','Check the time and venue','Accept the table-tennis quest'],
-  location:'Library',interests:['Table tennis'],duration:20000,
-  events:[
-   {at:2400,action:'quest-notification'},{at:6500,action:'open-alert'},
-   {at:7200,action:'focus-quest'},{at:12800,action:'accept-quest'},
   ],
  },
  {
@@ -80,17 +68,29 @@ export const demoScenarios:Scenario[] = [
    {at:1300,action:'forum-compose'},
    ...typeDraft('forum-title','Stuck on Q3',2300),
    ...typeDraft('forum-body','How do I loop through a list?',4600),
-   {at:9100,action:'forum-publish'},{at:10600,action:'forum-open'},
+   {at:7800,action:'forum-publish'},{at:10600,action:'forum-open'},
    {at:12600,action:'classmate-reply',text:'Try a for loop over the list. No index needed.'},
    ...typeDraft('forum-draft','That worked, thanks!',14700),
-   {at:17900,action:'forum-reply'},
+   {at:17000,action:'forum-reply'},
    {at:19400,action:'classmate-reply',text:'Nice! I’ll be in lecture tomorrow if you want to compare notes.'},
    {at:21800,action:'introduction'},{at:23500,action:'hello'},{at:27000,action:'chats'},{at:28200,action:'open-chat'},
    ...typeDraft('chat-draft','Thanks for helping on Q3!',29600),
-   {at:33400,action:'chat-send',reply:'Anytime! That one took me a while too.'},
+   {at:32500,action:'chat-send',reply:'Anytime! That one took me a while too.'},
    ...typeDraft('chat-draft','Want to sit together in lecture?',37400),
-   {at:41900,action:'chat-send',reply:'Sure! I’ll save you a seat.'},
+   {at:41000,action:'chat-send',reply:'Sure! I’ll save you a seat.'},
    {at:46700,action:'meet'},{at:51600,action:'classroom'},
+  ],
+ },
+ {
+  name:'Jamie',year:1,title:'Table-tennis quest',headline:'Meet through a shared activity',
+  bio:'Jamie enjoys table tennis and worries about interrupting a group that already knows each other.',
+  traits:['Table tennis','New to campus'],
+  goal:'Find a casual meetup and accept a quest with an open spot.',
+  highlights:['Receive a matching quest notification','Check the time and venue','Accept the table-tennis quest'],
+  location:'Library',interests:['Table tennis'],duration:20000,
+  events:[
+   {at:2400,action:'quest-notification'},{at:6500,action:'open-alert'},
+   {at:7200,action:'focus-quest'},{at:12800,action:'accept-quest'},
   ],
  },
 ];

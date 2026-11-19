@@ -17,15 +17,15 @@ Open the localhost URL printed by Vite. For a production build, run `npm run bui
 
 ## Scenario walkthrough with fictional personas
 
-Open **Profile → Scenario walkthrough with fictional personas**. Each persona has one continuous progress bar. Playback moves automatically from Sam to Jamie to Alex, then starts over.
+Open **Profile → Scenario walkthrough with fictional personas**. Each persona has one continuous progress bar. Playback moves automatically from Sam to Alex to Jamie, then starts over.
 
 | Playback time | Fictional student | What the demo shows |
 | --- | --- | --- |
 | 0:00–0:45 | Sam, Year 2 | Sends a hello to an EMIA 2020 classmate, talks about forming a project group in Chats, and opens Meet F2F to prepare for a meeting before lecture. |
-| 0:45–1:05 | Jamie, Year 1 | Receives a table-tennis quest notification, opens the quest, checks the time and venue, and accepts. |
-| 1:05–2:00 | Alex, Year 3 | Posts a homework question, thanks the classmate who helps, and follows up in chat before meeting in class. |
+| 0:45–1:40 | Alex, Year 3 | Posts a homework question, thanks the classmate who helps, and follows up in chat before meeting in class. |
+| 1:40–2:00 | Jamie, Year 1 | Receives a table-tennis quest notification, opens the quest, checks the time and venue, and accepts. |
 
-Use the right arrow to advance to the next persona, the picker to jump to any story, or Replay to restart the active one. Interacting with the app pauses playback. Reduced-motion preferences start the demo paused. The desktop panel shows the active scenario and fictional profile beside the phone. Demo progress is isolated from browser storage, and exiting restores the previous session.
+Use the arrows to move between personas, the picker to jump to any story, or Replay to restart the active one. Interacting with the app pauses playback. Reduced-motion preferences start the demo paused. The desktop panel shows the active scenario and fictional profile beside the phone. Demo progress is isolated from browser storage, and exiting restores the previous session.
 ## Updated interactions
 
 Student presence, invitation acceptance, and topic-based replies are simulated locally. Profile, appearance, selected sections, pending invitations, and conversations persist in browser localStorage. The prototype runs without authentication, GPS, or a messaging backend. Sound is off by default.

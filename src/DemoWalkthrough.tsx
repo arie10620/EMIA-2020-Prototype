@@ -1,5 +1,5 @@
 import {useLayoutEffect,useRef} from 'react';
-import {ArrowRight,Pause,Play,RotateCcw,X} from 'lucide-react';
+import {ArrowLeft,ArrowRight,Pause,Play,RotateCcw,X} from 'lucide-react';
 import {demoScenarios,walkthroughTitle} from './demoPlayback';
 
 type Props = {
@@ -31,6 +31,7 @@ export default function DemoWalkthrough({index,time,playing,onSelect,onPlay,onRe
    <button aria-label="Exit demo walkthrough" onClick={onExit}><X size={17}/></button>
   </div>
   <div className="demo-strip-controls">
+   <button aria-label="Previous persona" title="Previous persona" onClick={()=>onSelect((index+demoScenarios.length-1)%demoScenarios.length)}><ArrowLeft size={17}/></button>
    <select aria-label="Demo scenario" value={index} onChange={event=>onSelect(Number(event.target.value))}>
     {demoScenarios.map(({name,year,title},i)=><option value={i} key={name}>{name}, Year {year} · {title}</option>)}
    </select>

@@ -2,7 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {demoScenarios} from '../src/demoPlayback';
 import {eligible} from '../src/model';
 
-const [sam, ,alex]=demoScenarios;
+const [sam,alex]=demoScenarios;
 const samClassmate=eligible(sam.location)[0].name;
 const alexClassmate=eligible(alex.location)[0].name;
 const KEY='ustogether-v1';
@@ -42,7 +42,7 @@ async function postQuest(page:Page,title:string){
  return page.locator('.quest-card').filter({has:page.getByRole('heading',{name:title,exact:true})});
 }
 
-test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to Sam',async({page})=>{
+test('the two-minute walkthrough autoplays Sam, Alex and Jamie and loops back to Sam',async({page})=>{
  const errors=await start(page);
  await page.getByRole('button',{name:'Hide discussions',exact:true}).click();
  const saved=await stored(page);
@@ -50,7 +50,7 @@ test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to
  const toolbar=page.getByRole('region',{name:'Scenario walkthrough with fictional personas'});
  const chooser=toolbar.getByRole('combobox',{name:'Demo scenario'});
  await expect(chooser.getByRole('option')).toHaveText([
-  'Sam, Year 2 · Project groupmate','Jamie, Year 1 · Table-tennis quest','Alex, Year 3 · Homework and classmates',
+  'Sam, Year 2 · Project groupmate','Alex, Year 3 · Homework and classmates','Jamie, Year 1 · Table-tennis quest',
  ]);
  await expect(toolbar.getByRole('progressbar').locator('span')).toHaveCount(1);
  await expect(toolbar.getByText('Scenario notes')).toHaveCount(0);
@@ -62,21 +62,11 @@ test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to
  await expect(page.getByText('Hey, are you in EMIA 2020 too?',{exact:true})).toBeVisible();
  await expect(page.getByText('Sounds good! See you outside the classroom.',{exact:true})).toBeVisible();
 
- await page.clock.runFor(9900);
+ await page.clock.runFor(11800);
  await expect(chooser).toHaveValue('1');
- await expect(page.getByRole('button',{name:/New quest for your interests.*Table tennis doubles/})).toBeVisible();
- await page.clock.runFor(3300);
- const tennis=page.locator('[data-quest-id="table-tennis"]');
- await expect(tennis).toContainText('LG1 · Court 4');
- await expect(tennis).toContainText('Today · 6:00 PM');
- await page.clock.runFor(6500);
- await expect(tennis).toContainText(/Joined.*\+1 level/);
-
- await page.clock.runFor(12300);
- await expect(chooser).toHaveValue('2');
  await expect(page.getByRole('textbox',{name:'Post title'})).toHaveValue('Stuck on Q3');
  await expect(page.getByRole('textbox',{name:'Post description'})).toHaveValue(/^How do/);
- await page.clock.runFor(15200);
+ await page.clock.runFor(15400);
  const post=page.locator('.social-post').filter({has:page.getByRole('heading',{name:'Stuck on Q3'})});
  await expect(post.locator('.social-comment').first()).toContainText(alexClassmate);
  await expect(post).toContainText('That worked, thanks!');
@@ -86,7 +76,17 @@ test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to
  await expect(page.getByText('Sure! I’ll save you a seat.',{exact:true})).toBeVisible();
  await page.clock.runFor(4800);
  await expect(page.locator('.world-chat-heading strong')).toHaveText(alexClassmate);
- await page.clock.runFor(2900);
+
+ await page.clock.runFor(5700);
+ await expect(chooser).toHaveValue('2');
+ await expect(page.getByRole('button',{name:/New quest for your interests.*Table tennis doubles/})).toBeVisible();
+ await page.clock.runFor(3300);
+ const tennis=page.locator('[data-quest-id="table-tennis"]');
+ await expect(tennis).toContainText('LG1 · Court 4');
+ await expect(tennis).toContainText('Today · 6:00 PM');
+ await page.clock.runFor(6500);
+ await expect(tennis).toContainText(/Joined.*\+1 level/);
+ await page.clock.runFor(7400);
  await expect(chooser).toHaveValue('0');
 
  expect(await stored(page)).toEqual(saved);
@@ -99,21 +99,25 @@ test('the two-minute walkthrough autoplays Sam, Jamie and Alex and loops back to
 });
 
 
-test('the next arrow cycles through personas and preserves playback state',async({page})=>{
+test('the arrows cycle through personas and preserves playback state',async({page})=>{
  await page.setViewportSize({width:320,height:568});
  await start(page);await enterDemo(page);
  const chooser=page.getByRole('combobox',{name:'Demo scenario'});
  const next=page.getByRole('button',{name:'Next persona',exact:true});
+ const previous=page.getByRole('button',{name:'Previous persona',exact:true});
  await expect(next).toBeInViewport();
- await next.click();
- await expect(chooser).toHaveValue('1');
+ await expect(previous).toBeInViewport();
+ await previous.click();
+ await expect(chooser).toHaveValue('2');
  await expect(page.getByRole('button',{name:'Play demo animation',exact:true})).toBeVisible();
+ await next.click();
+ await expect(chooser).toHaveValue('0');
  await playFor(page,800);
  await next.click();
- await expect(chooser).toHaveValue('2');
+ await expect(chooser).toHaveValue('1');
  await expect(page.getByRole('button',{name:'Pause demo animation',exact:true})).toBeVisible();
  await expect(page.getByRole('progressbar',{name:'Alex walkthrough progress'})).toHaveAttribute('aria-valuenow','0');
- await next.click();
+ await previous.click();
  await expect(chooser).toHaveValue('0');
 });
 
@@ -134,7 +138,7 @@ test('manual demo hellos stay pending while paused and resume with playback',asy
 });
 
 test('demo quest invitations freeze while paused and never leak into the saved session',async({page})=>{
- await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,1);
+ await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,2);
  const quest=await postQuest(page,'A demo coffee break');await quest.getByRole('button',{name:'Invite student',exact:true}).click();await page.locator('.quest-invite .setting-row').first().click();
  await page.clock.runFor(3000);await expect(page.locator('.quest-invite')).toContainText(/Accepting/);
  await page.getByRole('button',{name:'Play demo animation',exact:true}).click();await page.clock.runFor(1300);await expect(quest).toContainText('1/2 joined');
@@ -167,7 +171,7 @@ test('desktop shows the persona beside a focus-trapped phone dialog from 1024px'
  await expect(panel).toBeHidden();
  await page.setViewportSize({width:1024,height:800});
  await expect(panel.getByRole('heading',{name:'Find a project groupmate'})).toBeVisible();
- await scenario(page,1);
+ await scenario(page,2);
  await expect(panel.getByRole('heading',{name:'Meet through a shared activity'})).toBeVisible();
  await playFor(page,8000);
  const quests=phone.getByRole('dialog',{name:'Lobby quests',exact:true});
@@ -191,7 +195,7 @@ test('desktop shows the persona beside a focus-trapped phone dialog from 1024px'
  await expect(quests).toHaveCount(0);
  await expect(phone).toHaveAttribute('data-demo-playing','false');
 
- await scenario(page,2);
+ await scenario(page,1);
  await expect(panel.getByRole('heading',{name:'A homework question can start a friendship'})).toBeVisible();
  await page.getByRole('button',{name:'Exit demo walkthrough',exact:true}).click();
  await expect(panel).toHaveCount(0);

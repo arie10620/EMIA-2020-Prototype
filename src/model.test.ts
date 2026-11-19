@@ -83,7 +83,7 @@ test('Random fictional posts use present students, respect sections, and have a 
  assert.equal(simulateRoomPost(empty,profile,'Library',[],now),empty);
 });
 test('The three fictional scenarios fit a two-minute pass and start from isolated sample data',()=>{
- assert.deepEqual(demoScenarios.map(({name,duration})=>[name,duration]),[['Sam',45000],['Jamie',20000],['Alex',55000]]);
+ assert.deepEqual(demoScenarios.map(({name,duration})=>[name,duration]),[['Sam',45000],['Alex',55000],['Jamie',20000]]);
  assert.equal(demoScenarios.reduce((total,scenario)=>total+scenario.duration,0),120000);
  for(const scenario of demoScenarios){
   assert.ok(scenario.events.every((event,index)=>event.at<scenario.duration&&(!index||event.at>scenario.events[index-1].at)));
@@ -96,7 +96,7 @@ test('The three fictional scenarios fit a two-minute pass and start from isolate
   assert.ok(!replay.profile.classes.includes('COMP 2011 · L3'));
   assert.deepEqual(replay.game.joined,[]);
  }
- const jamie=demoFixture(demoScenarios[1],initialGame);
+ const jamie=demoFixture(demoScenarios[2],initialGame);
  assert.equal(jamie.notification?.id,tableTennisId);
  assert.ok(!jamie.game.quests.some(quest=>quest.id===tableTennisId));
  assert.ok(initialGame.quests.some(quest=>quest.id===tableTennisId));
