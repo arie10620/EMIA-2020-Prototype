@@ -1,4 +1,8 @@
 import {test,expect,type Page} from '@playwright/test';
+import {demoScenarios,stepStart} from '../src/demoPlayback';
+
+const alex=demoScenarios[2];
+const alexReplyAt=alex.events.find(event=>event.action==='forum-reply')!.at;
 
 const KEY='ustogether-v1';
 const profile={name:'Real Student',intro:'A saved real session',interests:['Hiking','Photography','Coffee'],classes:['COMP 1021 · L1'],avatar:{type:'Firebird',color:'#c9473d',clothes:'#709988',accessory:'Scarf',item:'Coffee',hair:'Short',skin:'#e7b58c'}};
@@ -59,7 +63,7 @@ test('the three fictional scenarios use the live quest, Meet F2F and classroom d
  await expect(page.locator('[data-quest-id="demo-ai-review"]')).toContainText('Compare AI lecture examples');
  await page.clock.runFor(4100);
  await expect(page.getByRole('heading',{name:'COMP 2211 · L1 Classroom'})).toBeVisible();
- await page.clock.runFor(6500);
+ await page.clock.runFor(alexReplyAt-5700+400);
  const post=page.locator('.social-post').filter({has:page.getByRole('heading',{name:'Which AI example should we bring?',exact:true})});
  await expect(post).toContainText('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?');
  await expect(toolbar.getByText(/^At arrival.*Which example did you pick/)).toBeVisible();
@@ -105,7 +109,7 @@ test('each persona has three selectable steps that open the live app at the righ
  const thread=await jump(2,'Classroom discussions');
  await expect(thread.getByRole('textbox',{name:'Write a comment'})).toBeVisible();
  await toolbar.getByRole('button',{name:'Play demo animation'}).click();
- await page.clock.runFor(4500);
+ await page.clock.runFor(alexReplyAt-stepStart(alex,alex.steps[2])+400);
  await expect(thread.locator('.social-comment')).toContainText('spam-filter example');
  await toolbar.getByRole('button',{name:'Exit demo walkthrough'}).click();
  expect(await stored(page)).toEqual(saved);
@@ -179,7 +183,8 @@ test('desktop presentation shows the active persona and steps beside the phone d
   return dialog;
  };
 
- await expect(panel.getByRole('heading',{name:'Jamie Year 1'})).toBeVisible();
+ await expect(panel.getByRole('heading',{name:'Meet through a shared activity'})).toBeVisible();
+ await expect(panel.getByText('Jamie · Year 1',{exact:true})).toBeVisible();
  await expect(panel.getByRole('listitem')).toHaveCount(3);
  await expect(current).toHaveText('Open the quest board');
  await scenario(page,0,3000);
@@ -201,7 +206,8 @@ test('desktop presentation shows the active persona and steps beside the phone d
  await expect(current).toHaveText('Check the time and venue');
 
  await scenario(page,1,11900);
- await expect(panel.getByRole('heading',{name:'Sam Year 2'})).toBeVisible();
+ await expect(panel.getByRole('heading',{name:'Start with a shared class'})).toBeVisible();
+ await expect(panel.getByText('Sam · Year 2',{exact:true})).toBeVisible();
  await expect(current).toHaveText('Open Meet F2F');
  await checkLayout('Meet Sophie face to face');
  await panel.getByRole('button',{name:'Join Python practice',exact:true}).click();
@@ -209,7 +215,8 @@ test('desktop presentation shows the active persona and steps beside the phone d
  await checkLayout('Lobby quests');
 
  await scenario(page,2,11800);
- await expect(panel.getByRole('heading',{name:'Alex Year 3'})).toBeVisible();
+ await expect(panel.getByRole('heading',{name:'Join the conversation in the forum'})).toBeVisible();
+ await expect(panel.getByText('Alex · Year 3',{exact:true})).toBeVisible();
  await expect(current).toHaveText('Reply to the thread');
  await checkLayout('Classroom discussions');
 
@@ -241,16 +248,28 @@ test('normal quests and forum posts match the effects demonstrated in playback',
 });
 
 
-test('replaying Alex clears the reply and pauses the scenario on reduced motion',async({page})=>{
- await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,2,12000);
+test('Alex types progressively, pauses mid-draft, and starts cleanly on replay',async({page})=>{
+ await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,2,alexReplyAt+400);
  const reply=page.locator('.social-comment').getByText('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',{exact:true});await expect(reply).toBeVisible();
  await page.getByRole('button',{name:'Pause demo animation',exact:true}).click();
  await page.clock.runFor(20000);await expect(reply).toBeVisible();
  await page.getByRole('button',{name:'Replay current scenario',exact:true}).click();
  await expect(reply).toHaveCount(0);
  await page.getByRole('button',{name:'Play demo animation',exact:true}).click();
- await page.clock.runFor(9600);
- await expect(page.getByRole('textbox',{name:'Write a comment'})).toHaveValue(/spam-filter example/);
+ await page.clock.runFor(10100);
+ const draft=page.getByRole('textbox',{name:'Write a comment'});
+ await expect(draft).toHaveValue(/^I’ll b/);
+ await page.getByRole('button',{name:'Pause demo animation',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Play demo animation',exact:true})).toBeVisible();
+ await page.clock.runFor(100);
+ const partial=await draft.inputValue();
+ expect(partial).not.toContain('spam-filter example');
+ await page.clock.runFor(2500);
+ await expect(draft).toHaveValue(partial);
+ await page.getByRole('button',{name:'Play demo animation',exact:true}).click();
+ await page.clock.runFor(3600);
+ await expect(draft).toHaveValue(/spam-filter example/);
+ expect(await draft.inputValue()).not.toContain('everyone else pick?');
  await expect(reply).toHaveCount(0);
  await page.getByRole('button',{name:'Exit demo walkthrough',exact:true}).click();expect(await stored(page)).toEqual(saved);
 });

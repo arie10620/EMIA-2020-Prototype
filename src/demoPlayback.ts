@@ -23,6 +23,7 @@ export type Scenario = {
  name:string;
  year:number;
  title:string;
+ headline:string;
  bio:string;
  traits:string[];
  goal:string;
@@ -47,9 +48,21 @@ const alexQuest:Quest = {
  details:'Bring one example from the lecture you’d like to go over.',capacity:3,participants:[],interests:['Programming'],
 };
 
+function typeForumReply(text:string,start:number):DemoEvent[] {
+ let at=start,draft='';
+ const characters:DemoEvent[]=Array.from(text,(character,index)=>{
+  draft+=character;
+  const cue:DemoEvent={at,action:'forum-draft',text:draft};
+  // Keep cues on the playback clock and pause briefly at word and sentence breaks.
+  at+=/[.!?]/.test(character)?400:character===' '||index%7===5?200:100;
+  return cue;
+ });
+ return [...characters,{at:at+700,action:'forum-reply'}];
+}
+
 export const demoScenarios:Scenario[] = [
  {
-  name:'Jamie',year:1,title:'Table tennis',
+  name:'Jamie',year:1,title:'Table tennis',headline:'Meet through a shared activity',
   bio:'Jamie enjoys table tennis and worries about interrupting a group that already knows each other.',
   traits:['Table tennis','New to campus'],
   goal:'Find a casual meetup with classmates and think of something to say on arrival.',
@@ -66,7 +79,7 @@ export const demoScenarios:Scenario[] = [
   events:[{at:700,action:'quests'},{at:2300,action:'focus-quest',questId:'table-tennis'}],
  },
  {
-  name:'Sam',year:2,title:'Meet F2F',
+  name:'Sam',year:2,title:'Meet F2F',headline:'Start with a shared class',
   bio:'Sam wants to connect with someone from the same programming lecture.',
   traits:['Programming','COMP 1021 · L1'],
   goal:'Find a study partner and get a class-specific opener for meeting in person.',
@@ -86,7 +99,7 @@ export const demoScenarios:Scenario[] = [
   ],
  },
  {
-  name:'Alex',year:3,title:'Class forum',
+  name:'Alex',year:3,title:'Class forum',headline:'Join the conversation in the forum',
   bio:'Alex is open to meeting classmates and rarely checks campus apps.',
   traits:['AI coursework','COMP 2211 · L1'],
   goal:'Find a class meetup and join a group conversation before meeting in person.',
@@ -99,11 +112,11 @@ export const demoScenarios:Scenario[] = [
   hypothesis:'The forum gives Alex a way into a group conversation before approaching anyone individually.',
   testQuestion:'Does following a classroom discussion give students a reason to open USTogether again?',
   opener:'I’ll bring the spam-filter example. Which example did you pick?',
-  openerAt:10500,location:aiClass,interests:['Programming'],duration:22000,
+  openerAt:10500,location:aiClass,interests:['Programming'],duration:30000,
   events:[
    {at:700,action:'quests'},{at:3700,action:'close-quests'},{at:4700,action:'class-forum'},
-   {at:7300,action:'forum-thread'},{at:9300,action:'forum-draft',text:'I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?'},
-   {at:11500,action:'forum-reply'},
+   {at:7300,action:'forum-thread'},
+   ...typeForumReply('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',9300),
   ],
  },
 ];

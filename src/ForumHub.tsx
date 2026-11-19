@@ -20,8 +20,14 @@ export default function Forums({profile,store,onChange,onEdit,automation,initial
   if(automation.action==='draft')setDrafts(previous=>({...previous,[automation.postId]:automation.text}));
   else comment(automation.postId);
  },[automation]);
+ const demoReplyAction=automation&&activePost===automation.postId?automation.action:undefined;
  useEffect(()=>{
-  if(automation&&activePost===automation.postId)first.current?.querySelector('.social-comment-compose')?.scrollIntoView({block:'nearest'});
+  if(demoReplyAction)first.current?.querySelector('.social-comment-compose')?.scrollIntoView({block:'nearest'});
+ },[demoReplyAction]);
+ useEffect(()=>{
+  if(automation?.action!=='draft'||activePost!==automation.postId||drafts[automation.postId]!==automation.text)return;
+  const field=first.current?.querySelector('textarea[aria-label="Write a comment"]');
+  if(field instanceof HTMLTextAreaElement)field.scrollTop=field.scrollHeight;
  },[automation,drafts,activePost]);
  const composerForm=forum?(<form className="social-composer" onSubmit={e=>{e.preventDefault();publish();}}><div className="social-identity"><Avatar data={profile.avatar} size={38}/><strong>{profile.name}</strong><span>New post</span></div><label className="community-destination">Post to<select aria-label="Post community" value={forum.id} onChange={e=>setDestination(e.target.value)} disabled={!!filter}>{forums.map(f=><option key={f.id} value={f.id}>{communityName(f)}</option>)}</select></label><label className="social-field-label" htmlFor="forum-post-title">Title</label><input autoFocus={embedded} id="forum-post-title" aria-label="Post title" placeholder="Give your topic a title" maxLength={100} value={title} onChange={e=>setTitle(e.target.value)}/><label className="social-field-label" htmlFor="forum-post-body">Description</label><textarea id="forum-post-body" aria-label="Post description" placeholder={`What’s happening in ${forum.name}?`} maxLength={1500} value={body} onChange={e=>setBody(e.target.value)}/><div className="social-compose-footer"><small>{body.length}/1500</small><button className="social-publish" disabled={!title.trim()||!body.trim()}>Post<Send size={15}/></button></div></form>):null;
  if(composing&&embedded)return <section className="forum-inline-composer"><button className="text-button" onClick={()=>setComposing(false)}>&larr; Back to discussions</button>{composerForm}</section>;

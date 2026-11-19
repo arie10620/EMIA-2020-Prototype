@@ -10,8 +10,8 @@ export default function DemoScenarioPanel({scenario,current,onStep}:{scenario:Sc
   }}
  >
   <div className="demo-persona">
-   <p className="demo-persona-type">Fictional student profile</p>
-   <h1>{scenario.name} <span>Year {scenario.year}</span></h1>
+   <h1>{scenario.headline}</h1>
+   <p className="demo-persona-type">{scenario.name} · Year {scenario.year}</p>
    <p className="demo-persona-bio">{scenario.bio}</p>
    <p className="demo-persona-traits">{scenario.traits.join(' · ')}</p>
   </div>

@@ -305,18 +305,14 @@
   color:#354335;
  }
  .demo-persona{border-top:2px solid #73886a;padding-top:18px}
- .demo-persona-type{margin:0;color:#52664e;font-size:.875rem;font-weight:650}
+ .demo-persona-type{margin:0 0 8px;color:#52664e;font-size:.875rem;font-weight:650}
  .demo-persona h1{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:baseline;
-  gap:6px 14px;
-  margin:12px 0;
-  font-size:clamp(2.75rem,5vw,4.25rem);
-  line-height:1;
+  margin:0 0 12px;
+  font-size:clamp(2rem,3.6vw,3.25rem);
+  line-height:1.06;
+  text-wrap:balance;
   color:#2d412e;
  }
- .demo-persona h1 span{font-size:1rem;font-weight:600;color:#52664e}
  .demo-persona-bio,.demo-scenario-goal p{margin:0;font-size:1rem;line-height:1.5}
  .demo-persona-traits{margin:10px 0 0;color:#52664e;font-size:.875rem;font-weight:600}
  .demo-scenario-goal,.demo-scenario-steps{margin-top:24px}
