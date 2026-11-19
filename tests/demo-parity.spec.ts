@@ -52,7 +52,7 @@ test('the two-minute walkthrough autoplays Sam, Alex and Jamie and loops back to
  await expect(chooser.getByRole('option')).toHaveText([
   'Sam, Year 2 · Project groupmate','Alex, Year 3 · Homework and classmates','Jamie, Year 1 · Table-tennis quest',
  ]);
- await expect(toolbar.getByRole('progressbar').locator('span')).toHaveCount(1);
+ await expect(toolbar.getByRole('slider')).toHaveCount(1);
  await expect(toolbar.getByText('Scenario notes')).toHaveCount(0);
  await playFor(page,7400);
  await expect(page.locator('nav').getByRole('button',{name:'Chats',exact:true})).toHaveClass(/active/);
@@ -99,7 +99,7 @@ test('the two-minute walkthrough autoplays Sam, Alex and Jamie and loops back to
 });
 
 
-test('the arrows cycle through personas and preserves playback state',async({page})=>{
+test('the arrows cycle through personas and preserve playback state',async({page})=>{
  await page.setViewportSize({width:320,height:568});
  await start(page);await enterDemo(page);
  const chooser=page.getByRole('combobox',{name:'Demo scenario'});
@@ -116,9 +116,65 @@ test('the arrows cycle through personas and preserves playback state',async({pag
  await next.click();
  await expect(chooser).toHaveValue('1');
  await expect(page.getByRole('button',{name:'Pause demo animation',exact:true})).toBeVisible();
- await expect(page.getByRole('progressbar',{name:'Alex walkthrough progress'})).toHaveAttribute('aria-valuenow','0');
+ await expect(page.getByRole('slider',{name:'Alex walkthrough progress'})).toHaveValue('0');
  await previous.click();
  await expect(chooser).toHaveValue('0');
+});
+
+
+test('the timeline scrubs forward and backward without losing playback state',async({page})=>{
+ await start(page);const saved=await stored(page);await enterDemo(page);
+ const slider=page.getByRole('slider');
+ const thumb=page.locator('.demo-loop-handle');
+ const drag=async(from:number,to:number)=>{
+  const box=(await slider.boundingBox())!;
+  await page.mouse.move(box.x+box.width*from,box.y+box.height/2);
+  await page.mouse.down();
+  await expect(thumb).toHaveCSS('opacity','1');
+  await page.mouse.move(box.x+box.width*to,box.y+box.height/2,{steps:5});
+  await page.mouse.up();
+  await expect(page.locator('.demo-loop-track')).toHaveAttribute('data-scrubbing','false');
+ };
+ await expect(thumb).toHaveCSS('opacity','0');
+ await drag(.05,.73);
+ await expect(page.getByText('Sounds good! See you outside the classroom.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Play demo animation'})).toBeVisible();
+ await slider.press('Home');
+ await expect(slider).toHaveValue('0');
+ await expect(page.getByText('Sounds good! See you outside the classroom.',{exact:true})).toHaveCount(0);
+ await drag(.05,.26);
+ await expect(page.getByText(/is typing/)).toBeVisible();
+ await playFor(page,1600);
+ await expect(page.getByText('Yeah! Still looking for a group too.',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Pause demo animation'}).click();
+
+ await scenario(page,1);
+ await drag(.09,.1);
+ await expect(page.getByRole('textbox',{name:'Post title'})).toHaveValue('Stuck on Q3');
+ await expect(page.getByRole('textbox',{name:'Post description'})).toHaveValue(/^How do/);
+ await drag(.1,.37);
+ await expect(page.locator('.social-post')).toContainText('That worked, thanks!');
+
+ await scenario(page,2);
+ await drag(.18,.76);
+ const tennis=page.locator('[data-quest-id="table-tennis"]');
+ await expect(tennis).toContainText('Joined');
+ await drag(.74,.19);
+ await expect(tennis).toHaveCount(0);
+ await expect(page.getByRole('button',{name:/New quest for your interests.*Table tennis doubles/})).toBeVisible();
+
+ await page.getByRole('button',{name:'Play demo animation'}).click();
+ const box=(await slider.boundingBox())!;
+ await page.mouse.move(box.x+box.width*.68,box.y+box.height/2);
+ await page.mouse.down();
+ const timestamp=await slider.inputValue();
+ await page.clock.runFor(1200);
+ await expect(slider).toHaveValue(timestamp);
+ await page.mouse.up();
+ await page.clock.runFor(700);
+ expect(Number(await slider.inputValue())).toBeGreaterThan(Number(timestamp));
+ await page.getByRole('button',{name:'Exit demo walkthrough'}).click();
+ expect(await stored(page)).toEqual(saved);
 });
 
 

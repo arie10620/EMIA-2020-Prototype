@@ -38,8 +38,12 @@
 .demo-strip-controls{display:flex;align-items:center;gap:6px}
 .demo-strip-controls>button{display:grid;place-items:center;min-width:33px;height:35px;background:#f8f9ef;border:1px solid #c6d4b1;border-radius:6px;padding:0;color:#607b4d}
 .demo-strip-controls select{display:block;min-width:0;flex:1;height:35px;background:#f8f9ef;border:1px solid #c6d4b1;border-radius:6px;padding:5px 6px;font:inherit;font-size:12px;color:#526e40}
-.demo-loop-track{height:5px;border-radius:3px;background:#dce3cd;overflow:hidden;margin-top:7px}
-.demo-loop-track>span{height:100%;display:block;background:#708b56}
+.demo-loop-track{position:relative;height:16px;margin-top:3px}
+.demo-loop-rail{position:absolute;inset:5px 0 6px;border-radius:3px;background:#dce3cd;overflow:hidden}
+.demo-loop-rail>span{display:block;height:100%;width:var(--demo-progress);background:#708b56}
+.demo-loop-handle{position:absolute;top:50%;left:var(--demo-progress);width:12px;height:12px;border-radius:50%;background:#526e40;transform:translate(-50%,-50%);opacity:0;pointer-events:none}
+.demo-loop-track[data-scrubbing="true"] .demo-loop-handle,.demo-loop-track:has(input:focus-visible) .demo-loop-handle{opacity:1}
+.demo-scrubber{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:none}
 
 
 

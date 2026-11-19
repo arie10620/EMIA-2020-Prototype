@@ -6,7 +6,7 @@ export function useDialogFocus(panel:RefObject<HTMLElement|null>,close:RefObject
  useEffect(()=>{
   if(!open)return;
   const previous=document.activeElement as HTMLElement|null;
-  close.current?.focus();
+  if(!previous?.hasAttribute('data-keep-focus'))close.current?.focus();
   const key=(event:KeyboardEvent)=>{
    if(event.key==='Escape'){event.preventDefault();closeRef.current();return;}
    if(event.key!=='Tab')return;

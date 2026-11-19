@@ -25,7 +25,7 @@ Open **Profile → Scenario walkthrough with fictional personas**. Each persona 
 | 0:45–1:40 | Alex, Year 3 | Posts a homework question, thanks the classmate who helps, and follows up in chat before meeting in class. |
 | 1:40–2:00 | Jamie, Year 1 | Receives a table-tennis quest notification, opens the quest, checks the time and venue, and accepts. |
 
-Use the arrows to move between personas, the picker to jump to any story, or Replay to restart the active one. Interacting with the app pauses playback. Reduced-motion preferences start the demo paused. The desktop panel shows the active scenario and fictional profile beside the phone. Demo progress is isolated from browser storage, and exiting restores the previous session.
+Use the arrows to move between personas, the picker to jump to any story, or Replay to restart the active one. Drag the timeline to rewind or jump ahead in the current story. Interacting with the app pauses playback. Reduced-motion preferences start the demo paused. The desktop panel shows the active scenario and fictional profile beside the phone. Demo progress is isolated from browser storage, and exiting restores the previous session.
 ## Updated interactions
 
 Student presence, invitation acceptance, and topic-based replies are simulated locally. Profile, appearance, selected sections, pending invitations, and conversations persist in browser localStorage. The prototype runs without authentication, GPS, or a messaging backend. Sound is off by default.

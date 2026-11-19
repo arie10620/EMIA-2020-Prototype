@@ -1,4 +1,4 @@
-import {demoFixture,demoScenarios,tableTennisId} from './demoPlayback.ts';
+import {demoFixture,demoFrame,demoScenarios,tableTennisId} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {courses,interests,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
@@ -101,6 +101,26 @@ test('The three fictional scenarios fit a two-minute pass and start from isolate
  assert.ok(!jamie.game.quests.some(quest=>quest.id===tableTennisId));
  assert.ok(initialGame.quests.some(quest=>quest.id===tableTennisId));
 });
+test('Seeking restores drafts, pending replies, and quest state at the requested moment',()=>{
+ const [sam,alex,jamie]=demoScenarios;
+ const pending=demoFrame(sam,initialGame,11700,100_000);
+ assert.equal(pending.view,'chat');
+ assert.equal(pending.pendingReply?.text,'Yeah! Still looking for a group too.');
+ const responded=demoFrame(sam,initialGame,13200,100_000);
+ assert.equal(responded.pendingReply,null);
+ assert.equal(responded.threads[responded.target.id].messages.at(-1)?.text,'Yeah! Still looking for a group too.');
+ const composing=demoFrame(alex,initialGame,5300,100_000);
+ assert.equal(composing.view,'compose');
+ assert.equal(composing.forumDraft.title,'Stuck on Q3');
+ assert.match(composing.forumDraft.body,/^How do/);
+ assert.ok(!composing.forumDraft.body.endsWith('?'));
+ const joined=demoFrame(jamie,initialGame,15000,100_000);
+ assert.ok(joined.game.joined.includes(tableTennisId));
+ const notice=demoFrame(jamie,initialGame,4000,100_000);
+ assert.equal(notice.alert?.id,tableTennisId);
+ assert.deepEqual(notice.game.joined,[]);
+});
+
 test('Face to face keeps the shared class alongside many shared interests and respects exact sections',()=>{
  const peer=eligible(demo.classes[0])[0];
  const profile={...demo,interests:[...peer.interests]};
