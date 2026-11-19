@@ -7,13 +7,15 @@ type Props = {
  time:number;
  playing:boolean;
  loop:number;
+ currentStep:number;
+ onStep:(index:number)=>void;
  onSelect:(index:number)=>void;
  onPlay:(playing:boolean)=>void;
  onReplay:()=>void;
  onExit:()=>void;
 };
 
-export default function DemoWalkthrough({index,time,playing,loop,onSelect,onPlay,onReplay,onExit}:Props) {
+export default function DemoWalkthrough({index,time,playing,loop,currentStep,onStep,onSelect,onPlay,onReplay,onExit}:Props) {
  const scenario = demoScenarios[index];
  const strip = useRef<HTMLDivElement>(null);
  const [notes,setNotes] = useState(false);
@@ -43,6 +45,9 @@ export default function DemoWalkthrough({index,time,playing,loop,onSelect,onPlay
    <button aria-label="Next scenario" disabled={index===demoScenarios.length-1} onClick={()=>select(index+1)}><ArrowRight size={17}/></button>
   </div>
   <div className="demo-walkthrough-status">
+   <div className="demo-step-controls" role="group" aria-label="Walkthrough steps">
+    {scenario.steps.map((step,i)=><button key={step.label} aria-label={`Step ${i+1}: ${step.label}`} aria-current={currentStep===i?'step':undefined} onClick={()=>{setNotes(false);onStep(i);}}>{i+1}</button>)}
+   </div>
    <span>{playing?'Playing':'Paused'} · Loop {loop}</span>
    <button aria-expanded={notes} aria-controls="demo-scenario-notes" onClick={()=>{if(!notes)onPlay(false);setNotes(!notes);}}>Scenario notes</button>
   </div>

@@ -12,7 +12,12 @@ type DemoEvent =
  | {at:number;action:'focus-quest'|'accept-quest';questId:string}
  | {at:number;action:'forum-draft';text:string};
 
-type ScenarioStep = {label:string; startsOn?:DemoEvent['action']|'arrival'};
+type StepView =
+ | {kind:'quests';focusQuest?:string}
+ | {kind:'students'|'meet';joinedQuest:string}
+ | {kind:'forum';thread?:string};
+
+type ScenarioStep = {label:string;startsOn:DemoEvent['action']|'arrival';view:StepView};
 
 export type Scenario = {
  name:string;
@@ -21,7 +26,7 @@ export type Scenario = {
  bio:string;
  traits:string[];
  goal:string;
- steps:ScenarioStep[];
+ steps:[ScenarioStep,ScenarioStep,ScenarioStep];
  setup:string;
  hypothesis:string;
  testQuestion:string;
@@ -49,9 +54,9 @@ export const demoScenarios:Scenario[] = [
   traits:['Table tennis','New to campus'],
   goal:'Find a casual meetup with classmates and think of something to say on arrival.',
   steps:[
-   {label:'Open the quest board'},
-   {label:'Check the time and venue',startsOn:'focus-quest'},
-   {label:'Try an arrival opener',startsOn:'arrival'},
+   {label:'Open the quest board',startsOn:'quests',view:{kind:'quests'}},
+   {label:'Check the time and venue',startsOn:'focus-quest',view:{kind:'quests',focusQuest:'table-tennis'}},
+   {label:'Try an arrival opener',startsOn:'arrival',view:{kind:'quests',focusQuest:'table-tennis'}},
   ],
   setup:'Jamie wants to meet classmates but worries about interrupting a group. Jamie checks the time and venue for a table-tennis quest.',
   hypothesis:'A shared activity gives Jamie a reason to turn up. Jamie might still hesitate if it’s unclear whether the others already know one another.',
@@ -66,9 +71,9 @@ export const demoScenarios:Scenario[] = [
   traits:['Programming','COMP 1021 · L1'],
   goal:'Find a study partner and get a class-specific opener for meeting in person.',
   steps:[
-   {label:'Join Python practice'},
-   {label:'Say hello to a classmate',startsOn:'students'},
-   {label:'Open Meet F2F',startsOn:'meet'},
+   {label:'Join Python practice',startsOn:'quests',view:{kind:'quests'}},
+   {label:'Say hello to a classmate',startsOn:'students',view:{kind:'students',joinedQuest:'study-buddy'}},
+   {label:'Open Meet F2F',startsOn:'meet',view:{kind:'meet',joinedQuest:'study-buddy'}},
   ],
   setup:'Sam wants a study partner from the same lecture. Sam finds a Python practice quest and opens Meet F2F for something to say.',
   hypothesis:'A prompt tied to a shared lecture could give Sam a specific way to start the conversation.',
@@ -86,9 +91,9 @@ export const demoScenarios:Scenario[] = [
   traits:['AI coursework','COMP 2211 · L1'],
   goal:'Find a class meetup and join a group conversation before meeting in person.',
   steps:[
-   {label:'Find the lecture meetup'},
-   {label:'Open the classroom discussion',startsOn:'class-forum'},
-   {label:'Reply to the thread',startsOn:'forum-draft'},
+   {label:'Find the lecture meetup',startsOn:'quests',view:{kind:'quests'}},
+   {label:'Open the classroom discussion',startsOn:'class-forum',view:{kind:'forum'}},
+   {label:'Reply to the thread',startsOn:'forum-thread',view:{kind:'forum',thread:alexThread}},
   ],
   setup:'Alex is open to meeting people but rarely checks campus apps. Alex finds an AI lecture meetup and browses the classroom forum for a discussion worth replying to.',
   hypothesis:'The forum gives Alex a way into a group conversation before approaching anyone individually.',
@@ -102,6 +107,16 @@ export const demoScenarios:Scenario[] = [
   ],
  },
 ];
+
+export function stepStart(scenario:Scenario,step:ScenarioStep) {
+ return step.startsOn==='arrival'
+  ? scenario.openerAt
+  : scenario.events.find(event=>event.action===step.startsOn)!.at;
+}
+
+export function currentDemoStep(scenario:Scenario,time:number) {
+ return scenario.steps.reduce((active,step,index)=>time>=stepStart(scenario,step)?index:active,0);
+}
 
 export function demoFixture(scenario:Scenario,game:Game,now:number) {
  const {name,setup,interests,location} = scenario;

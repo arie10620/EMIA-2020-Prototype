@@ -73,6 +73,45 @@ test('the three fictional scenarios use the live quest, Meet F2F and classroom d
  expect(errors).toEqual([]);
 });
 
+test('each persona has three selectable steps that open the live app at the right stage',async({page})=>{
+ await start(page);
+ const saved=await stored(page);
+ await enterDemo(page);
+ const toolbar=page.getByRole('region',{name:'Scenario walkthrough with fictional personas'});
+ const steps=toolbar.getByRole('group',{name:'Walkthrough steps'}).getByRole('button');
+ const jump=async(index:number,dialog:string)=>{
+  await steps.nth(index).click();
+  await expect(steps.nth(index)).toHaveAttribute('aria-current','step');
+  await expect(toolbar.getByRole('button',{name:'Play demo animation'})).toBeVisible();
+  return page.getByRole('dialog',{name:dialog,exact:true});
+ };
+
+ await expect(steps).toHaveCount(3);
+ await expect(await jump(0,'Lobby quests')).toBeVisible();
+ const tennis=await jump(1,'Lobby quests');
+ await expect(tennis.getByText('LG1 · Court 4',{exact:true})).toBeInViewport();
+ await expect(await jump(2,'Lobby quests')).toBeVisible();
+ await expect(toolbar.getByText(/^At arrival.*Mind if I join/)).toBeVisible();
+
+ await scenario(page,1);
+ await expect((await jump(0,'Lobby quests')).getByRole('heading',{name:'Practice Python together'})).toBeVisible();
+ await expect(await jump(1,'Students nearby')).toBeVisible();
+ const meet=await jump(2,'Meet Sophie face to face');
+ await expect(meet.getByText(/which Python idea/)).toBeVisible();
+
+ await scenario(page,2);
+ await expect((await jump(0,'Lobby quests')).getByRole('heading',{name:'Compare AI lecture examples'})).toBeVisible();
+ await expect((await jump(1,'Classroom discussions')).getByRole('heading',{name:'COMP 2211 · L1 Classroom'})).toBeVisible();
+ const thread=await jump(2,'Classroom discussions');
+ await expect(thread.getByRole('textbox',{name:'Write a comment'})).toBeVisible();
+ await toolbar.getByRole('button',{name:'Play demo animation'}).click();
+ await page.clock.runFor(4500);
+ await expect(thread.locator('.social-comment')).toContainText('spam-filter example');
+ await toolbar.getByRole('button',{name:'Exit demo walkthrough'}).click();
+ expect(await stored(page)).toEqual(saved);
+});
+
+
 test('normal hello acceptance opens chat even when the lobby remounts',async({page})=>{
  const errors=await start(page);
  await page.getByRole('button',{name:'Meet Unknown student 1',exact:true}).click();await expect(page.getByRole('dialog',{name:'Meet Unknown',exact:true})).toBeVisible();
@@ -165,6 +204,9 @@ test('desktop presentation shows the active persona and steps beside the phone d
  await expect(panel.getByRole('heading',{name:'Sam Year 2'})).toBeVisible();
  await expect(current).toHaveText('Open Meet F2F');
  await checkLayout('Meet Sophie face to face');
+ await panel.getByRole('button',{name:'Join Python practice',exact:true}).click();
+ await expect(current).toHaveText('Join Python practice');
+ await checkLayout('Lobby quests');
 
  await scenario(page,2,11800);
  await expect(panel.getByRole('heading',{name:'Alex Year 3'})).toBeVisible();

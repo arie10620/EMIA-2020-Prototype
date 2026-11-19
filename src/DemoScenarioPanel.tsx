@@ -1,13 +1,6 @@
 import type {Scenario} from './demoPlayback';
 
-export default function DemoScenarioPanel({scenario,time}:{scenario:Scenario;time:number}) {
- const current = scenario.steps.reduce((active,step,index)=>{
-  const start = step.startsOn==='arrival'
-   ? scenario.openerAt
-   : scenario.events.find(event=>event.action===step.startsOn)?.at;
-  return start!==undefined&&time>=start ? index : active;
- },0);
-
+export default function DemoScenarioPanel({scenario,current,onStep}:{scenario:Scenario;current:number;onStep:(index:number)=>void}) {
  return <aside
   className="demo-scenario-panel"
   aria-label="User scenario and profile"
@@ -31,7 +24,7 @@ export default function DemoScenarioPanel({scenario,time}:{scenario:Scenario;tim
   <div className="demo-scenario-steps">
    <h2>Walkthrough steps</h2>
    <ol>
-    {scenario.steps.map((step,index)=><li key={step.label} aria-current={current===index?'step':undefined}>{step.label}</li>)}
+    {scenario.steps.map((step,index)=><li key={step.label} aria-current={current===index?'step':undefined}><button onClick={()=>onStep(index)}>{step.label}</button></li>)}
    </ol>
   </div>
  </aside>;
