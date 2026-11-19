@@ -8,16 +8,16 @@ export const walkthroughTask = 'Find a quest you might join. Then show what you 
 export const walkthroughTakeaway = 'We walked through three fictional scenarios to identify what to test next: whether students can find a meetup they’d join, whether the suggested openers feel natural, and whether the forum gives them a reason to return.';
 
 type DemoEvent =
- | {at:number;action:'quests'|'close-quests'|'students'|'introduction'|'hello'|'meet'|'class-forum'|'forum-thread'|'forum-reply'}
+ | {at:number;action:'quests'|'students'|'introduction'|'hello'|'meet'|'class-forum'|'forum-reply'}
  | {at:number;action:'focus-quest'|'accept-quest';questId:string}
  | {at:number;action:'forum-draft';text:string};
 
 type StepView =
  | {kind:'quests';focusQuest?:string}
- | {kind:'students'|'meet';joinedQuest:string}
- | {kind:'forum';thread?:string};
+ | {kind:'campus'|'chat';joinedQuest:string}
+ | {kind:'thread';thread:string};
 
-type ScenarioStep = {label:string;startsOn:DemoEvent['action']|'arrival';view:StepView};
+type ScenarioStep = {label:string;startsAt:number;view?:StepView};
 
 export type Scenario = {
  name:string;
@@ -67,16 +67,16 @@ export const demoScenarios:Scenario[] = [
   traits:['Table tennis','New to campus'],
   goal:'Find a casual meetup with classmates and think of something to say on arrival.',
   steps:[
-   {label:'Open the quest board',startsOn:'quests',view:{kind:'quests'}},
-   {label:'Check the time and venue',startsOn:'focus-quest',view:{kind:'quests',focusQuest:'table-tennis'}},
-   {label:'Try an arrival opener',startsOn:'arrival',view:{kind:'quests',focusQuest:'table-tennis'}},
+   {label:'Open the quest board',startsAt:0},
+   {label:'Check the time and venue',startsAt:6000,view:{kind:'quests'}},
+   {label:'Try an arrival opener',startsAt:13000,view:{kind:'quests',focusQuest:'table-tennis'}},
   ],
   setup:'Jamie wants to meet classmates but worries about interrupting a group. Jamie checks the time and venue for a table-tennis quest.',
   hypothesis:'A shared activity gives Jamie a reason to turn up. Jamie might still hesitate if it’s unclear whether the others already know one another.',
   testQuestion:'Can students find a meetup they’d join, and can they tell whether newcomers are welcome?',
   opener:'Hi, I’m Jamie. Is this the table-tennis group? Mind if I join?',
-  openerAt:5500,location:'Library',interests:['Table tennis'],duration:16000,
-  events:[{at:700,action:'quests'},{at:2300,action:'focus-quest',questId:'table-tennis'}],
+  openerAt:13700,location:'Library',interests:['Table tennis'],duration:22000,
+  events:[{at:700,action:'quests'},{at:6700,action:'focus-quest',questId:'table-tennis'}],
  },
  {
   name:'Sam',year:2,title:'Meet F2F',headline:'Start with a shared class',
@@ -84,18 +84,18 @@ export const demoScenarios:Scenario[] = [
   traits:['Programming','COMP 1021 · L1'],
   goal:'Find a study partner and get a class-specific opener for meeting in person.',
   steps:[
-   {label:'Join Python practice',startsOn:'quests',view:{kind:'quests'}},
-   {label:'Say hello to a classmate',startsOn:'students',view:{kind:'students',joinedQuest:'study-buddy'}},
-   {label:'Open Meet F2F',startsOn:'meet',view:{kind:'meet',joinedQuest:'study-buddy'}},
+   {label:'Join Python practice',startsAt:0},
+   {label:'Say hello to a classmate',startsAt:7000,view:{kind:'campus',joinedQuest:'study-buddy'}},
+   {label:'Open Meet F2F',startsAt:16500,view:{kind:'chat',joinedQuest:'study-buddy'}},
   ],
   setup:'Sam wants a study partner from the same lecture. Sam finds a Python practice quest and opens Meet F2F for something to say.',
   hypothesis:'A prompt tied to a shared lecture could give Sam a specific way to start the conversation.',
   testQuestion:'Would students feel comfortable saying a suggested shared-class opener out loud?',
   opener:'For COMP 1021 · L1, which Python idea has been most interesting so far?',
-  openerAt:11600,location:pythonClass,interests:['Programming'],duration:22000,
+  openerAt:17200,location:pythonClass,interests:['Programming'],duration:24500,
   events:[
-   {at:700,action:'quests'},{at:3800,action:'accept-quest',questId:'study-buddy'},{at:5200,action:'close-quests'},
-   {at:6100,action:'students'},{at:7300,action:'introduction'},{at:8600,action:'hello'},{at:11600,action:'meet'},
+   {at:700,action:'quests'},{at:3800,action:'accept-quest',questId:'study-buddy'},
+   {at:7700,action:'students'},{at:8800,action:'introduction'},{at:10100,action:'hello'},{at:17200,action:'meet'},
   ],
  },
  {
@@ -104,42 +104,28 @@ export const demoScenarios:Scenario[] = [
   traits:['AI coursework','COMP 2211 · L1'],
   goal:'Find a class meetup and join a group conversation before meeting in person.',
   steps:[
-   {label:'Find the lecture meetup',startsOn:'quests',view:{kind:'quests'}},
-   {label:'Open the classroom discussion',startsOn:'class-forum',view:{kind:'forum'}},
-   {label:'Reply to the thread',startsOn:'forum-thread',view:{kind:'forum',thread:alexThread}},
+   {label:'Find the lecture meetup',startsAt:0},
+   {label:'Open the classroom discussion',startsAt:6000},
+   {label:'Reply to the thread',startsAt:13000,view:{kind:'thread',thread:alexThread}},
   ],
   setup:'Alex is open to meeting people but rarely checks campus apps. Alex finds an AI lecture meetup and browses the classroom forum for a discussion worth replying to.',
   hypothesis:'The forum gives Alex a way into a group conversation before approaching anyone individually.',
   testQuestion:'Does following a classroom discussion give students a reason to open USTogether again?',
   opener:'I’ll bring the spam-filter example. Which example did you pick?',
-  openerAt:10500,location:aiClass,interests:['Programming'],duration:30000,
+  openerAt:16900,location:aiClass,interests:['Programming'],duration:36500,
   events:[
-   {at:700,action:'quests'},{at:3700,action:'close-quests'},{at:4700,action:'class-forum'},
-   {at:7300,action:'forum-thread'},
-   ...typeForumReply('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',9300),
+   {at:700,action:'quests'},{at:6700,action:'class-forum'},
+   ...typeForumReply('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',15700),
   ],
  },
 ];
 
-export function stepStart(scenario:Scenario,step:ScenarioStep) {
- return step.startsOn==='arrival'
-  ? scenario.openerAt
-  : scenario.events.find(event=>event.action===step.startsOn)!.at;
-}
-
-export function demoPlaybackRange(scenario:Scenario,selectedStep?:number) {
- if(selectedStep===undefined)return {start:0,end:scenario.duration};
- const nextStep=scenario.steps[selectedStep+1];
+export function demoPlaybackRange(scenario:Scenario,step:number) {
  return {
-  start:stepStart(scenario,scenario.steps[selectedStep]),
-  end:nextStep?stepStart(scenario,nextStep):scenario.duration,
+  start:scenario.steps[step].startsAt,
+  end:scenario.steps[step+1]?.startsAt??scenario.duration,
  };
 }
-
-export function currentDemoStep(scenario:Scenario,time:number) {
- return scenario.steps.reduce((active,step,index)=>time>=stepStart(scenario,step)?index:active,0);
-}
-
 export function demoFixture(scenario:Scenario,game:Game,now:number) {
  const {name,setup,interests,location} = scenario;
  const profile:Profile = {...demo,name,intro:setup,interests:[...interests],classes:location==='Library'?[]:[location],avatar:{...demo.avatar}};

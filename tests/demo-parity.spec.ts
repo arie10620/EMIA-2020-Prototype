@@ -1,8 +1,10 @@
 import {test,expect,type Page} from '@playwright/test';
-import {demoScenarios,stepStart} from '../src/demoPlayback';
+import {demoScenarios,demoPlaybackRange} from '../src/demoPlayback';
 
 const alex=demoScenarios[2];
 const alexReplyAt=alex.events.find(event=>event.action==='forum-reply')!.at;
+const alexReplyStep=demoPlaybackRange(alex,2);
+const alexTypingAt=alex.events.find(event=>event.action==='forum-draft')!.at;
 
 const KEY='ustogether-v1';
 const profile={name:'Real Student',intro:'A saved real session',interests:['Hiking','Photography','Coffee'],classes:['COMP 1021 · L1'],avatar:{type:'Firebird',color:'#c9473d',clothes:'#709988',accessory:'Scarf',item:'Coffee',hair:'Short',skin:'#e7b58c'}};
@@ -21,9 +23,20 @@ async function enterDemo(page:Page){
  await page.getByRole('button',{name:/Scenario walkthrough with fictional personas/}).click();
  await expect(page.locator('.phone')).toHaveAttribute('data-session','demo');
 }
-async function scenario(page:Page,index:number,time=0){
+async function scenario(page:Page,index:number){
  await page.getByRole('combobox',{name:'Demo scenario',exact:true}).selectOption(String(index));
- if(time){await page.getByRole('button',{name:'Play demo animation',exact:true}).click();await page.clock.runFor(time);}
+}
+async function walkStep(page:Page,index:number,time=0){
+ const bar=page.getByRole('progressbar',{name:'Step loop progress'});
+ const active=Number((await bar.getAttribute('aria-valuetext'))?.match(/^Step (\d+)/)?.[1])-1;
+ const arrow=page.getByRole('button',{name:active<index?'Next step':'Previous step',exact:true});
+ for(let i=0;i<Math.abs(index-active);i++)await arrow.click();
+ await expect(bar).toHaveAttribute('aria-valuetext',new RegExp(`^Step ${index+1} of 3,`));
+ if(time){
+  const play=page.getByRole('button',{name:'Play demo animation',exact:true});
+  if(await play.isVisible())await play.click();
+  await page.clock.runFor(time);
+ }
 }
 async function stored(page:Page){return page.evaluate(key=>JSON.parse(localStorage.getItem(key)!),KEY);}
 async function postQuest(page:Page,title:string){
@@ -46,24 +59,25 @@ test('the three fictional scenarios use the live quest, Meet F2F and classroom d
  await toolbar.getByRole('button',{name:'Scenario notes',exact:true}).click();
  await expect(toolbar.getByText('Find a quest you might join. Then show what you could say when you arrive.',{exact:false})).toBeVisible();
  await expect(toolbar.getByText(/We walked through three fictional scenarios to identify what to test next/)).toBeVisible();
- await scenario(page,0,6000);
+ await walkStep(page,0,1100);await walkStep(page,1,1100);
  const tennis=page.locator('[data-quest-id="table-tennis"]');
  await expect(tennis).toContainText('LG1 · Court 4');
  await expect(tennis).toContainText('Today · 6:00 PM');
  await expect(tennis.getByRole('button',{name:'Accept quest'})).toBeInViewport();
+ await walkStep(page,2,1100);
  await expect(toolbar.getByText(/^At arrival.*Mind if I join/)).toBeVisible();
 
- await scenario(page,1,4400);
+ await scenario(page,1);await walkStep(page,0,4400);
  await expect(page.locator('[data-quest-id="study-buddy"]')).toContainText('Joined');
- await page.clock.runFor(7500);
+ await walkStep(page,1,6500);await expect(page.locator('.world-chat-heading strong')).toHaveText('Sophie');await walkStep(page,2,1100);
  const meet=page.getByRole('dialog',{name:'Meet Sophie face to face',exact:true});
  await expect(meet.getByText('For COMP 1021 · L1, which Python idea has been most interesting so far?')).toBeVisible();
 
- await scenario(page,2,1600);
+ await scenario(page,2);await walkStep(page,0,1600);
  await expect(page.locator('[data-quest-id="demo-ai-review"]')).toContainText('Compare AI lecture examples');
- await page.clock.runFor(4100);
+ await walkStep(page,1,1100);
  await expect(page.getByRole('heading',{name:'COMP 2211 · L1 Classroom'})).toBeVisible();
- await page.clock.runFor(alexReplyAt-5700+400);
+ await walkStep(page,2,alexReplyAt-alexReplyStep.start+400);
  const post=page.locator('.social-post').filter({has:page.getByRole('heading',{name:'Which AI example should we bring?',exact:true})});
  await expect(post).toContainText('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?');
  await expect(toolbar.getByText(/^At arrival.*Which example did you pick/)).toBeVisible();
@@ -77,57 +91,60 @@ test('the three fictional scenarios use the live quest, Meet F2F and classroom d
  expect(errors).toEqual([]);
 });
 
-test('each persona has three selectable steps and playback loops the selected step',async({page})=>{
+test('the step arrows control three equal segments and each step repeats independently',async({page})=>{
  await start(page);
  const saved=await stored(page);
  await enterDemo(page);
  const toolbar=page.getByRole('region',{name:'Scenario walkthrough with fictional personas'});
- const steps=toolbar.getByRole('group',{name:'Walkthrough steps'}).getByRole('button',{name:/^Step /});
- const jump=async(index:number,dialog:string)=>{
-  await steps.nth(index).click();
-  await expect(steps.nth(index)).toHaveAttribute('aria-current','step');
-  await expect(steps.nth(index)).toHaveAttribute('aria-pressed','true');
-  await expect(toolbar.getByRole('button',{name:'Play demo animation'})).toBeVisible();
-  return page.getByRole('dialog',{name:dialog,exact:true});
+ const previous=toolbar.getByRole('button',{name:'Previous step'});
+ const next=toolbar.getByRole('button',{name:'Next step'});
+ const segments=toolbar.locator('.demo-loop-segment');
+ const bar=toolbar.getByRole('progressbar',{name:'Step loop progress'});
+ const checkBar=async(active:number)=>{
+  await expect(segments).toHaveCount(3);
+  const widths=await segments.evaluateAll(items=>items.map(item=>item.getBoundingClientRect().width));
+  expect(Math.max(...widths)-Math.min(...widths)).toBeLessThan(1);
+  expect(widths[0]).toBeGreaterThan(0);
+  for(let i=0;i<3;i++){
+   await expect(segments.nth(i)).toHaveAttribute('data-state',i<active?'complete':i===active?'current':'upcoming');
+   if(i!==active)await expect(segments.nth(i).locator('span')).toHaveAttribute('style',`width: ${i<active?100:0}%;`);
+  }
  };
-
- await expect(steps).toHaveCount(3);
- await expect(await jump(0,'Lobby quests')).toBeVisible();
- await toolbar.getByRole('button',{name:'Play demo animation'}).click();
- await page.clock.runFor(2300);
- await expect(steps.nth(0)).toHaveAttribute('aria-current','step');
+ await expect(previous).toBeDisabled();
+ await expect(toolbar.getByRole('button',{name:/^Step [123]:|Full walkthrough/})).toHaveCount(0);
+ await checkBar(0);
+ await walkStep(page,0,7100);
  await expect(toolbar.getByText('Playing · Loop 2',{exact:true})).toBeVisible();
- await toolbar.getByRole('button',{name:'Pause demo animation'}).click();
- const tennis=await jump(1,'Lobby quests');
- await expect(tennis.getByText('LG1 · Court 4',{exact:true})).toBeInViewport();
- await expect(await jump(2,'Lobby quests')).toBeVisible();
+ await expect(page.getByRole('dialog',{name:'Lobby quests',exact:true})).toBeVisible();
+ await checkBar(0);
+
+ await next.click();
+ await page.clock.runFor(1500);
+ await checkBar(1);
+ expect(Number(await bar.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
+ await next.click();
+ await page.clock.runFor(1200);
+ await expect(next).toBeDisabled();
  await expect(toolbar.getByText(/^At arrival.*Mind if I join/)).toBeVisible();
+ await checkBar(2);
+ await previous.click();
+ await checkBar(1);
 
  await scenario(page,1);
- await expect((await jump(0,'Lobby quests')).getByRole('heading',{name:'Practice Python together'})).toBeVisible();
- await expect(await jump(1,'Students nearby')).toBeVisible();
- const meet=await jump(2,'Meet Sophie face to face');
- await expect(meet.getByText(/which Python idea/)).toBeVisible();
+ await expect(previous).toBeDisabled();
+ await expect(bar).toHaveAttribute('aria-valuetext',/^Step 1 of 3, Join Python practice/);
+ await checkBar(0);
 
  await scenario(page,2);
- await expect((await jump(0,'Lobby quests')).getByRole('heading',{name:'Compare AI lecture examples'})).toBeVisible();
- await expect((await jump(1,'Classroom discussions')).getByRole('heading',{name:'COMP 2211 · L1 Classroom'})).toBeVisible();
- const thread=await jump(2,'Classroom discussions');
- await expect(thread.getByRole('textbox',{name:'Write a comment'})).toBeVisible();
- await toolbar.getByRole('button',{name:'Play demo animation'}).click();
- await page.clock.runFor(alexReplyAt-stepStart(alex,alex.steps[2])+400);
+ await walkStep(page,2,alexReplyAt-alexReplyStep.start+400);
+ const thread=page.getByRole('dialog',{name:'Classroom discussions',exact:true});
  await expect(thread.locator('.social-comment')).toContainText('spam-filter example');
- await page.clock.runFor(alex.duration-alexReplyAt+200);
+ await page.clock.runFor(alexReplyStep.end-alexReplyAt+200);
  await expect(toolbar.getByText('Playing · Loop 2',{exact:true})).toBeVisible();
- await expect(steps.nth(2)).toHaveAttribute('aria-pressed','true');
+ await expect(next).toBeDisabled();
+ await checkBar(2);
  await expect(thread.getByRole('textbox',{name:'Write a comment'})).toHaveValue('');
  await expect(thread.locator('.social-comment')).toHaveCount(0);
-
- const full=toolbar.getByRole('button',{name:'Full walkthrough'});
- await full.click();
- await expect(full).toHaveAttribute('aria-pressed','true');
- await expect(steps.nth(0)).toHaveAttribute('aria-current','step');
- await expect(toolbar.getByRole('progressbar',{name:'Scenario loop progress'})).toBeVisible();
  await toolbar.getByRole('button',{name:'Exit demo walkthrough'}).click();
  expect(await stored(page)).toEqual(saved);
 });
@@ -143,7 +160,7 @@ test('normal hello acceptance opens chat even when the lobby remounts',async({pa
 });
 
 test('manual demo hellos stay pending while paused and resume with playback',async({page})=>{
- await start(page);await enterDemo(page);await scenario(page,1,7500);
+ await start(page);await enterDemo(page);await scenario(page,1);await walkStep(page,1,2100);
  await page.getByRole('button',{name:/Throw a hello/}).click();await page.clock.runFor(5000);await expect(page.locator('.hello-pending')).toBeVisible();
  await page.getByRole('button',{name:'Play demo animation',exact:true}).click();await page.clock.runFor(3000);await expect(page.locator('.peer-person .world-name').first()).toContainText('Sophie');
 });
@@ -166,7 +183,7 @@ test('a live pending reply resumes after a demo rather than disappearing',async(
 
 for(const [width,height] of [[320,568],[390,844],[844,390],[1440,1000]]){
  test(`demo dialogs and controls fit ${width}x${height}`,async({page})=>{
-  await page.setViewportSize({width,height});await start(page);await enterDemo(page);await scenario(page,1,7500);
+  await page.setViewportSize({width,height});await start(page);await enterDemo(page);await scenario(page,1);await walkStep(page,1,2100);
   const strip=await page.locator('.demo-strip').boundingBox(),dialog=await page.getByRole('dialog',{name:'Meet Unknown',exact:true}).boundingBox();expect(strip).not.toBeNull();expect(dialog).not.toBeNull();expect(dialog!.y).toBeGreaterThanOrEqual(strip!.y+strip!.height);expect(dialog!.y+dialog!.height).toBeLessThanOrEqual(height);
   const hello=page.getByRole('button',{name:/Throw a hello/});await expect(hello).toBeInViewport();await page.keyboard.press('Escape');await expect(page.getByRole('dialog',{name:'Meet Unknown',exact:true})).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  });
@@ -204,7 +221,8 @@ test('desktop presentation shows the active persona and steps beside the phone d
  await expect(panel.getByText('Jamie · Year 1',{exact:true})).toBeVisible();
  await expect(panel.getByRole('listitem')).toHaveCount(3);
  await expect(current).toHaveText('Open the quest board');
- await scenario(page,0,3000);
+ await page.getByRole('button',{name:'Play demo animation',exact:true}).click();
+ await walkStep(page,1,1200);
  await expect(current).toHaveText('Check the time and venue');
  const quests=await checkLayout('Lobby quests');
  const close=quests.getByRole('button',{name:'Close lobby quests'});
@@ -222,23 +240,23 @@ test('desktop presentation shows the active persona and steps beside the phone d
  await page.clock.runFor(3000);
  await expect(current).toHaveText('Check the time and venue');
 
- await scenario(page,1,11900);
+ await scenario(page,1);await walkStep(page,2,1100);
  await expect(panel.getByRole('heading',{name:'Start with a shared class'})).toBeVisible();
  await expect(panel.getByText('Sam · Year 2',{exact:true})).toBeVisible();
  await expect(current).toHaveText('Open Meet F2F');
  await checkLayout('Meet Sophie face to face');
- await panel.getByRole('button',{name:'Join Python practice',exact:true}).click();
+ await walkStep(page,0,1100);
  await expect(current).toHaveText('Join Python practice');
  await checkLayout('Lobby quests');
 
- await scenario(page,2,11800);
+ await scenario(page,2);await walkStep(page,2,1100);
  await expect(panel.getByRole('heading',{name:'Join the conversation in the forum'})).toBeVisible();
  await expect(panel.getByText('Alex · Year 3',{exact:true})).toBeVisible();
  await expect(current).toHaveText('Reply to the thread');
  await checkLayout('Classroom discussions');
 
- await page.getByRole('button',{name:'Replay current scenario',exact:true}).click();
- await expect(current).toHaveText('Find the lecture meetup');
+ await page.getByRole('button',{name:'Replay current step',exact:true}).click();
+ await expect(current).toHaveText('Reply to the thread');
  await page.getByRole('button',{name:'Exit demo walkthrough',exact:true}).click();
  await expect(panel).toHaveCount(0);
  await expect(phone).toHaveAttribute('data-session','live');
@@ -266,14 +284,14 @@ test('normal quests and forum posts match the effects demonstrated in playback',
 
 
 test('Alex types progressively, pauses mid-draft, and starts cleanly on replay',async({page})=>{
- await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,2,alexReplyAt+400);
+ await start(page);const saved=await stored(page);await enterDemo(page);await scenario(page,2);await walkStep(page,2,alexReplyAt-alexReplyStep.start+400);
  const reply=page.locator('.social-comment').getByText('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',{exact:true});await expect(reply).toBeVisible();
  await page.getByRole('button',{name:'Pause demo animation',exact:true}).click();
  await page.clock.runFor(20000);await expect(reply).toBeVisible();
- await page.getByRole('button',{name:'Replay current scenario',exact:true}).click();
+ await page.getByRole('button',{name:'Replay current step',exact:true}).click();
  await expect(reply).toHaveCount(0);
  await page.getByRole('button',{name:'Play demo animation',exact:true}).click();
- await page.clock.runFor(10100);
+ await page.clock.runFor(alexTypingAt-alexReplyStep.start+800);
  const draft=page.getByRole('textbox',{name:'Write a comment'});
  await expect(draft).toHaveValue(/^I’ll b/);
  await page.getByRole('button',{name:'Pause demo animation',exact:true}).click();
