@@ -1,7 +1,7 @@
 import {demoFixture,demoTitles} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {courses,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
+import {courses,interests,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
 import {initialGame,joinQuest,createQuest,questFull} from './quests.ts';
 import {matchingQuests} from './alerts.ts';
 test('Quest alerts match interests, respect class sections, and exclude own or full quests',()=>{const base={id:'alert',lobby:'COMP 1021 · L1',hostId:'p0-0',hostName:'Sophie',title:'Photo walk',place:'Sundial',when:'Today',details:'',capacity:2,participants:[],interests:['Photography']};const prefs={enabled:true,interests:['Photography']};assert.equal(matchingQuests([base],prefs,['COMP 1021 · L1']).length,1);assert.equal(matchingQuests([base],prefs,['COMP 1021 · L2']).length,0);assert.equal(matchingQuests([{...base,lobby:'Library'}],prefs,[]).length,1);assert.equal(matchingQuests([{...base,hostId:'you'}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([{...base,participants:['a','b']}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{...prefs,enabled:false},['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{enabled:true,interests:['Cooking']},['COMP 1021 · L1']).length,0);});
@@ -130,4 +130,44 @@ test('Hello acceptance is identical for live and presentation clocks and freezes
  const epoch=Date.now();
  const live=advanceHellos({one:{...pending.one,acceptedAt:epoch+2700}},epoch+2700);
  assert.deepEqual(live.one.messages,accepted.one.messages);
+});
+
+
+import {conversationGroups,conversationSuggestions,conversationReply} from './conversations.ts';
+import {interestPresets,coursePresets,generalPresets} from './conversationPresets.ts';
+
+test('Every selectable interest and course has four distinct preset conversations and matching replies',()=>{
+ assert.deepEqual(Object.keys(interestPresets).sort(),[...interests].sort());
+ assert.deepEqual(Object.keys(coursePresets).sort(),courses.map(course=>course.code).sort());
+ for(const [interest,presets] of Object.entries(interestPresets)){
+  assert.equal(presets.length,4,interest);
+  assert.equal(new Set(presets.map(([question])=>question)).size,4,interest);
+  for(const [question,answer] of presets)assert.equal(conversationReply(question),answer,interest);
+ }
+ for(const course of courses){
+  const section=`${course.code} \u00b7 L1`,peer={...eligible('Library')[0],lobby:section};
+  const profile={...demo,classes:[section]},group=conversationGroups(profile,peer).find(group=>group.kind==='class')!;
+  assert.equal(group.prompts.length,4,course.code);
+  for(const prompt of group.prompts){assert.ok(prompt.question.includes(section));assert.equal(conversationReply(prompt.question,profile,peer),prompt.answer);}
+ }
+ assert.equal(Object.values(generalPresets).flat().length,16);
+});
+
+test('Suggestion sets rotate, keep a shared class visible, and never label unrelated interests or sections as shared',()=>{
+ const peer=eligible(demo.classes[0])[0],profile={...demo,interests:[...peer.interests]};
+ const first=conversationSuggestions(profile,peer),next=conversationSuggestions(profile,peer,1);
+ assert.equal(first.length,4);assert.equal(next.length,4);
+ assert.ok(first.some(prompt=>prompt.question.includes(peer.lobby)));
+ assert.ok(next.every((prompt,index)=>prompt.question!==first[index].question));
+ const groups=conversationGroups({...profile,interests:['Swimming'],classes:[]},peer);
+ assert.ok(!groups.some(group=>group.shared));assert.ok(!groups.some(group=>group.kind==='class'));
+ assert.equal(conversationSuggestions({...profile,interests:[],classes:[]},peer).length,4);
+ assert.ok(groups.some(group=>group.label==='Swimming'&&!group.shared));
+});
+
+test('Preset replies distinguish related topics and do not treat parts of unrelated words as interests',()=>{
+ assert.equal(reply('A board game sounds good'),interestPresets['Board games'][0][1]);
+ assert.equal(reply('I enjoy jazz music'),interestPresets.Jazz[0][1]);
+ assert.equal(reply('A caf\u00e9 break?'),interestPresets.Coffee[0][1]);
+ assert.equal(reply('Let us talk about education'),reply('something unique'));
 });

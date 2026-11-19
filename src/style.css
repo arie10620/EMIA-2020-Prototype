@@ -265,3 +265,13 @@
  .introduction-dialogue .opener{margin:12px 0;padding:10px}
  .introduction-actions{padding:10px 24px max(12px,env(safe-area-inset-bottom,0px))}
 }
+
+/* The same preset-topic browser serves personal chat and face-to-face ideas. */
+.conversation-topic-picker{display:flex;flex-direction:column;gap:8px;margin:18px 0 10px;color:#536d55;font-size:13px}
+.conversation-topic-picker select{width:100%;min-width:0;min-height:46px;padding:10px 12px;border:1px solid #ccd9bb;border-radius:11px;background:#f0f4e7;color:#415f47;font:inherit;font-size:16px}
+.meet-topics>.conversation-context{font-size:12px;line-height:1.5;margin:10px 0 16px}
+.conversation-question{flex:1;min-width:0;overflow-wrap:anywhere}
+.use-conversation{display:flex;align-items:center;gap:7px;min-height:44px;margin-top:12px;padding:8px 12px;border:1px solid #bbcdaa;border-radius:9px;background:#fbfcf4;color:#4f7154;font-size:13px}
+.more-conversations{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;padding:10px 14px;border:1px dashed #b7c7a4;border-radius:11px;background:#f0f4e7;color:#526f4d;font-size:14px}
+.conversation-return{margin-top:18px}
+.starter-scroll .starter-more{display:flex;align-items:center;gap:6px;flex-shrink:0;background:#e8efdc;border-color:#bdcdaa;color:#49694f}

@@ -107,3 +107,10 @@ Browser viewport checks cover widths from 320 to 440px, landscape sizes from 568
 The walkthrough drives the same forms, chat, quest board, forum composer, and actions used in normal sessions. Manual interactions pause playback. Press Play to resume pending simulated hellos, replies, and quest invitations. Demo room-post bubbles also follow playback time. Introductions keep the hello/chat action visible while their details scroll, and share Escape dismissal and keyboard focus handling with other popups. Exiting restores the previous session, discussion visibility, message drafts, and pending live replies; demo invitations cannot modify saved real quests.
 
 Run `npm test` for model checks and `npm run test:browser` for Chromium/WebKit interaction checks. The browser suite requires Google Chrome and Playwright WebKit (`npx playwright install webkit`). It uses a separate local server on port 5174 and covers all nine chapters, normal onboarding and matching, chats, quests, forums, pause/resume, session restoration, and phone/desktop dialog layout. Browser checks use isolated local sample data.
+
+
+## Preset conversation library
+
+Chat and Meet f2f share 132 locally written starters and matching simulated replies: four for each of the 20 interests, four for each of the nine sample courses (using the exact shared lecture section), and 16 across campus life, study habits, weekend plans, and meetup ideas. Suggested sets rotate with **More ideas**, keeping shared interests and a shared class first. The topic picker also lets students explore other interests without labeling them as shared.
+
+In personal chat, select **More ideas**; in character chat, use the sparkle button. **Send this starter** sends the selected question and gets its matching preset reply. **Meet f2f** uses the same topic library for in-person conversation and does not send a message. Both normal use and demo playback share these components and data. No external AI service is involved.

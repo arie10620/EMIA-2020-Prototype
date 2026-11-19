@@ -1,3 +1,4 @@
+import {conversationSuggestions,conversationReply} from './conversations.ts';
 export type AvatarData={type:string;color:string;clothes:string;accessory:string;item:string;hair:string;skin:string};
 export type Profile={name:string;intro:string;interests:string[];classes:string[];avatar:AvatarData};
 export type Peer={id:string;name:string;intro:string;interests:string[];lobby:string;level?:number;avatar:AvatarData};
@@ -29,8 +30,8 @@ export const eligible=(lobby:string)=>peers.filter(p=>p.lobby===lobby);
 export const peerName=(peer:Peer,thread?:Thread)=>thread?.status==='accepted'?peer.name:'Unknown';
 export const shared=(p:Profile,peer:Peer)=>p.interests.filter(i=>peer.interests.includes(i));
 export const recommended=(p:Profile,lobby:string)=>eligible(lobby).sort((a,b)=>shared(p,b).length-shared(p,a).length||a.id.localeCompare(b.id)).slice(0,3);
-export const starters=(p:Profile,peer:Peer)=>{const s=shared(p,peer);return s.length?s.slice(0,3).map(i=>`What got you into ${i.toLowerCase()}?`):[`How are you finding ${peer.lobby}?`];};
-export function reply(text:string){const s=text.toLowerCase();if(/hik|trail/.test(s))return 'The coastal trail is my favorite! Want to try a short sunset hike after class?';if(/photo|camera/.test(s))return 'I started taking photos around the sundial. The light by the sea is so good near sunset!';if(/coffee|café/.test(s))return 'A coffee break sounds perfect. Shall we meet by the library after class?';if(/game|rpg/.test(s))return 'I love a cozy co-op game after a long day. What have you been playing lately?';if(/cat/.test(s))return 'Cats immediately make my day better. I have an entire folder of campus cat photos!';if(/anime|film/.test(s))return 'Always looking for something new to watch! What would you recommend?';if(/cook|bak|snack/.test(s))return 'I’ve been trying easy recipes between classes. We should swap our favorite snacks!';if(/music|jazz/.test(s))return 'My study playlist is mostly mellow music. Send me a favorite song?';return 'That sounds fun! I’m glad you said hello. Want to tell me a little more?';}
+export const starters=(profile:Profile,peer:Peer)=>conversationSuggestions(profile,peer).map(prompt=>prompt.question);
+export const reply=(text:string,profile?:Profile,peer?:Peer)=>conversationReply(text,profile,peer);
 export const obstacles={
  Classroom:[.6,3.7].flatMap(x=>[1,2.65,4.3].map(y=>({x,y,w:1.7,h:1.0}))),
  Library:[{x:.25,y:.08,w:4.45,h:.64},{x:5,y:.6,w:.6,h:1.8},{x:.8,y:2.4,w:1.7,h:1.25},{x:3.7,y:3.8,w:1.6,h:1.65}],
