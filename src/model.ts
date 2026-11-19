@@ -13,6 +13,7 @@ const topics=[['Photography','Coffee','Indie music','Hiking'],['Hiking','Badmint
 const lobbies=[...courses.slice(0,3).flatMap(c=>c.sections.map(s=>`${c.code} · ${s}`)),'Library','Dorm common area',...courses.slice(3).flatMap(c=>c.sections.map(s=>`${c.code} · ${s}`))];
 export const peers:Peer[]=lobbies.flatMap((lobby,li)=>Array.from({length:4},(_,i)=>({id:`p${li}-${i}`,name:names[(li*3+i)%names.length],intro:bios[i],interests:topics[i],lobby,level:2+i*2+li%4,avatar:{...defaultAvatar,type:['Cat','Firebird','Human','Dog'][i],color:['#dfa36c','#c9473d','#715e4d','#c4ab86'][i],clothes:['#799b86','#d48b60','#849bba','#bb8da4'][i],accessory:i===0?'Glasses':i===1?'Scarf':'None',item:i===0?'Camera':i===2?'Book':'None'}})));
 export const eligible=(lobby:string)=>peers.filter(p=>p.lobby===lobby);
+export const peerName=(peer:Peer,thread?:Thread)=>thread?.status==='accepted'?peer.name:'Unknown';
 export const shared=(p:Profile,peer:Peer)=>p.interests.filter(i=>peer.interests.includes(i));
 export const recommended=(p:Profile,lobby:string)=>eligible(lobby).sort((a,b)=>shared(p,b).length-shared(p,a).length||a.id.localeCompare(b.id)).slice(0,3);
 export const starters=(p:Profile,peer:Peer)=>{const s=shared(p,peer);return s.length?s.slice(0,3).map(i=>`What got you into ${i.toLowerCase()}?`):[`How are you finding ${peer.lobby}?`];};

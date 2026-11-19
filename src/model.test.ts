@@ -1,7 +1,7 @@
 import {demoFixture,demoTitles} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {courses,demo,eligible,recommended,shared,reply,pathTo,walkable,obstacles,roomPositions} from './model.ts';
+import {courses,demo,eligible,recommended,shared,reply,peerName,pathTo,walkable,obstacles,roomPositions} from './model.ts';
 import {initialGame,joinQuest,createQuest,questFull} from './quests.ts';
 import {matchingQuests} from './alerts.ts';
 test('Quest alerts match interests, respect class sections, and exclude own or full quests',()=>{const base={id:'alert',lobby:'COMP 1021 · L1',hostId:'p0-0',hostName:'Sophie',title:'Photo walk',place:'Sundial',when:'Today',details:'',capacity:2,participants:[],interests:['Photography']};const prefs={enabled:true,interests:['Photography']};assert.equal(matchingQuests([base],prefs,['COMP 1021 · L1']).length,1);assert.equal(matchingQuests([base],prefs,['COMP 1021 · L2']).length,0);assert.equal(matchingQuests([{...base,lobby:'Library'}],prefs,[]).length,1);assert.equal(matchingQuests([{...base,hostId:'you'}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([{...base,participants:['a','b']}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{...prefs,enabled:false},['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{enabled:true,interests:['Cooking']},['COMP 1021 · L1']).length,0);});
@@ -103,4 +103,16 @@ test('Face to face keeps the shared class alongside many shared interests and re
  assert.ok(!meetingTopics(otherSection,peer).some(topic=>topic.includes(peer.lobby)));
  const classOnly=meetingTopics({...profile,interests:[]},peer);
  assert.ok(classOnly.some(topic=>topic.includes(peer.lobby)));
+});
+
+
+test('Student names depend only on accepted hellos, not opening a profile or a pending invitation',()=>{
+ const peer=eligible('Library')[0];
+ assert.equal(peerName(peer),'Unknown');
+ assert.equal(peerName(peer,{status:'pending',acceptedAt:0,messages:[]}),'Unknown');
+ assert.equal(peerName({...peer},undefined),'Unknown');
+ const accepted={status:'accepted' as const,acceptedAt:Date.now(),messages:[]};
+ assert.equal(peerName(peer,accepted),peer.name);
+ assert.equal(peerName(peer,JSON.parse(JSON.stringify(accepted))),peer.name);
+ assert.equal(peerName(eligible('Library')[1]),'Unknown');
 });

@@ -32,12 +32,12 @@ Fictional student presence, invitation acceptance (about 3 seconds), and topic-b
 - Pixelify Sans is bundled locally under its OFL license (`public/licenses/Pixelify-Sans.txt`).
 - Cats and dogs are four-legged animal sprites. Clothing colors customize their harnesses.
 - Tap the floor to walk along a furniture-aware path. Walking uses continuous interpolation and animated steps; reduced-motion mode moves immediately.
-- Student names appear above their characters as **Unknown** until you open their introduction. Accepted friends have a **Chat** button above them.
+- Student names stay **Unknown** in the lobby, nearby students list, introductions, and pending chats until a hello is accepted. Opening an introduction does not reveal a name. Accepted friends have a **Chat** button above them; accepted connections persist across refreshes.
 - Throwing a hello shows pending status in the scene. Acceptance automatically opens a chat bubble above that student. The Chats tab also keeps the full conversation history.
 - Each lobby has a quest board. Post an activity, venue, time, and 1–4 requested participants. The host is not counted among requested spots.
 - Accepting someone else’s quest raises your level by one, once per quest. Hosting does not award a level. Full parties lock automatically.
 - Hosts can invite nearby fictional students, who accept after a short simulated delay. This lets a presentation demonstrate filling a posted quest.
-- Quests, participants, discovered names, and levels persist in the same browser; **Reset demo** clears them along with the profile and chats.
+- Quests, participants, and levels persist in the same browser; **Reset demo** clears them along with the profile and chats.
 
 
 ## Lobby-first update
