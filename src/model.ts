@@ -3,6 +3,19 @@ export type Profile={name:string;intro:string;interests:string[];classes:string[
 export type Peer={id:string;name:string;intro:string;interests:string[];lobby:string;level?:number;avatar:AvatarData};
 export type Message={text:string;own:boolean};
 export type Thread={status:'pending'|'accepted';acceptedAt:number;messages:Message[]};
+// Acceptance uses the caller's clock in both normal use and presentation playback.
+export function advanceHellos(threads:Record<string,Thread>,now:number,paused=false){
+ if(paused)return threads;
+ let changed=false;
+ const next={...threads};
+ for(const [id,thread] of Object.entries(threads)){
+  if(thread.status==='pending'&&now>=thread.acceptedAt){
+   next[id]={...thread,status:'accepted',messages:[{text:'Hello landed! So glad you said hi. What’s been the best part of your day?',own:false}]};
+   changed=true;
+  }
+ }
+ return changed?next:threads;
+}
 export const interests=['Hiking','Photography','Badminton','Cats','Cooking','Anime','Cozy games','RPGs','Indie music','Jazz','Sci-fi films','Bouldering','Coffee','Baking','Board games','Running','Table tennis','Programming','Design','Swimming'];
 export const courses=[{code:'COMP 1021',title:'Introduction to Computer Science',sections:['L1','L2']},{code:'LANG 1403',title:'Academic English',sections:['L1','L2']},{code:'MATH 1013',title:'Calculus IB',sections:['L1','L2']},{code:'COMP 2011',title:'Programming with C++',sections:['L1','L2','L3']},{code:'COMP 2211',title:'Exploring Artificial Intelligence',sections:['L1','L2']},{code:'ISOM 1700',title:'Critical Issues in Business Operations',sections:['L1','L2']},{code:'MARK 2120',title:'Marketing Management',sections:['L1','L2']},{code:'PHYS 1112',title:'General Physics I',sections:['L1','L2']},{code:'HUMA 1000',title:'Cultures and Values',sections:['L1','L2','L3']}];
 export const defaultAvatar:AvatarData={type:'Human',color:'#d79a62',clothes:'#709988',accessory:'None',item:'Coffee',hair:'Short',skin:'#e7b58c'};

@@ -1,3 +1,27 @@
-import {useEffect,useRef,type ReactNode} from 'react';
+import {useEffect,useRef,type ReactNode,type RefObject} from 'react';
 import {X} from 'lucide-react';
-export default function Popup({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){const panel=useRef<HTMLElement>(null),close=useRef<HTMLButtonElement>(null);const closeRef=useRef(onClose);closeRef.current=onClose;useEffect(()=>{const previous=document.activeElement as HTMLElement|null;close.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();closeRef.current();}if(e.key==='Tab'){const all=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input,select,textarea,[tabindex="0"]')||[]).filter(el=>el.getClientRects().length>0);const first=all[0],last=all.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);return()=>{document.removeEventListener('keydown',key);previous?.focus();};},[]);return <div className="popup-backdrop" onClick={onClose}><section ref={panel} className="popup-panel" role="dialog" aria-label={title} aria-modal="true" onClick={e=>e.stopPropagation()}><div className="popup-heading"><h2>{title}</h2><button ref={close} className="icon-button" aria-label={`Close ${title.toLowerCase()}`} onClick={onClose}><X size={20}/></button></div><div className="popup-scroll">{children}</div></section></div>;}
+
+export function useDialogFocus(panel:RefObject<HTMLElement|null>,close:RefObject<HTMLButtonElement|null>,onClose:()=>void,open=true){
+ const closeRef=useRef(onClose);closeRef.current=onClose;
+ useEffect(()=>{
+  if(!open)return;
+  const previous=document.activeElement as HTMLElement|null;
+  close.current?.focus();
+  const key=(event:KeyboardEvent)=>{
+   if(event.key==='Escape'){event.preventDefault();closeRef.current();return;}
+   if(event.key!=='Tab')return;
+   const all=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')||[]).filter(element=>element.getClientRects().length>0);
+   const first=all[0],last=all.at(-1);
+   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+  };
+  document.addEventListener('keydown',key);
+  return()=>{document.removeEventListener('keydown',key);if(previous?.isConnected)previous.focus();};
+ },[open,panel,close]);
+}
+
+export default function Popup({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){
+ const panel=useRef<HTMLElement>(null),close=useRef<HTMLButtonElement>(null);
+ useDialogFocus(panel,close,onClose);
+ return <div className="popup-backdrop" onClick={onClose}><section ref={panel} className="popup-panel" role="dialog" aria-label={title} aria-modal="true" onClick={e=>e.stopPropagation()}><div className="popup-heading"><h2>{title}</h2><button ref={close} className="icon-button" aria-label={`Close ${title.toLowerCase()}`} onClick={onClose}><X size={20}/></button></div><div className="popup-scroll">{children}</div></section></div>;
+}

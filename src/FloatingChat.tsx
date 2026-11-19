@@ -1,9 +1,9 @@
-import {useLayoutEffect,useState,type ReactNode,type RefObject} from 'react';
+import {useEffect,useState,type ReactNode,type RefObject} from 'react';
 import {createPortal} from 'react-dom';
 type Layout={host:HTMLElement;left:number;top:number;width:number;height:number;pointer:number|null};
 export default function FloatingChat({scene,anchor,children,zoom=1}:{scene:RefObject<HTMLDivElement|null>;anchor:{x:number;y:number};children:ReactNode;zoom?:number}){
  const [layout,setLayout]=useState<Layout|null>(null);
- useLayoutEffect(()=>{const element=scene.current,host=element?.closest<HTMLElement>('.phone');if(!element||!host)return;
+ useEffect(()=>{const element=scene.current,host=element?.closest<HTMLElement>('.phone');if(!element||!host)return;
   const measure=()=>{
    const room=element.getBoundingClientRect(),phone=host.getBoundingClientRect(),style=getComputedStyle(host);
    const originX=phone.left+host.clientLeft,originY=phone.top+host.clientTop;

@@ -18,7 +18,7 @@ Open the localhost URL printed by Vite. For a production build, run `npm run bui
 ## Presentation walkthrough
 
 1. Choose **Use demo profile**, or enter a name and introduction.
-2. Customize any of the four avatar types, choose at least three interests, and select exact course sections.
+2. Customize any of the four avatar types, choose your interests, and select exact course sections.
 3. Enter campus, switch between Classroom, Library, and Dorm. The sliders button switches exact sections.
 4. Click an avatar or recommendation. Choose **Throw a hello**, wait for acceptance, and open chat.
 5. Send a starter or your own message to see a simulated reply. Return through Chats to reopen it.
@@ -66,7 +66,7 @@ Quests, Students, and Alerts are now the three top app shortcuts. The old presen
 
 The lobby starts at a larger 112% fit view. Zoom In, Zoom Out, and Fit controls change only the scene scale, keeping page layout and character movement coordinates stable. Chat repositions against the scaled character.
 
-Both the demo profile shortcut and all presentation chapters use **Firebird Chan**, a red **Firebird** with a **Scarf**. Introduction and Chat are one chapter containing discovery, introduction, greeting, acceptance, and messages. The eight chapters are Profile, Avatar, Interests, Classes, Lobby, Introduction & Chat, Join a quest, and Add a quest.
+Both the demo profile shortcut and all presentation chapters use **Firebird Chan**, a red **Firebird** with a **Scarf**. Introduction and Chat are one chapter containing discovery, introduction, greeting, acceptance, and messages. The nine chapters are Profile, Avatar, Interests, Classes, Lobby, Introduction & Chat, Join a quest, Add a quest, and Forums.
 
 
 ## Quest creation demo and popup polish
@@ -100,3 +100,10 @@ Open a personal conversation from Chats and select **Meet f2f** in its header (a
 Phone screens use the full available viewport with notch and home-indicator insets, fluid side spacing, larger touch controls, and 16px form text. Short screens keep the main actions and message composer visible while content scrolls inside the app. Landscape phones show campus controls beside the room and navigation along the right edge. Character chat avoids that navigation rail. Desktop keeps its framed layout.
 
 Browser viewport checks cover widths from 320 to 440px, landscape sizes from 568?320 to 932?430, and the desktop frame in Chromium and WebKit. Real iOS and Android keyboard behavior should also be checked on devices.
+
+
+## Demo and normal-use consistency checks
+
+The walkthrough drives the same forms, chat, quest board, forum composer, and actions used in normal sessions. Manual interactions pause playback. Press Play to resume pending simulated hellos, replies, and quest invitations. Demo room-post bubbles also follow playback time. Introductions keep the hello/chat action visible while their details scroll, and share Escape dismissal and keyboard focus handling with other popups. Exiting restores the previous session, discussion visibility, message drafts, and pending live replies; demo invitations cannot modify saved real quests.
+
+Run `npm test` for model checks and `npm run test:browser` for Chromium/WebKit interaction checks. The browser suite requires Google Chrome and Playwright WebKit (`npx playwright install webkit`). It uses a separate local server on port 5174 and covers all nine chapters, normal onboarding and matching, chats, quests, forums, pause/resume, session restoration, and phone/desktop dialog layout. Browser checks use isolated local sample data.

@@ -1,7 +1,7 @@
 import {demoFixture,demoTitles} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {courses,demo,eligible,recommended,shared,reply,peerName,pathTo,walkable,obstacles,roomPositions} from './model.ts';
+import {courses,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
 import {initialGame,joinQuest,createQuest,questFull} from './quests.ts';
 import {matchingQuests} from './alerts.ts';
 test('Quest alerts match interests, respect class sections, and exclude own or full quests',()=>{const base={id:'alert',lobby:'COMP 1021 · L1',hostId:'p0-0',hostName:'Sophie',title:'Photo walk',place:'Sundial',when:'Today',details:'',capacity:2,participants:[],interests:['Photography']};const prefs={enabled:true,interests:['Photography']};assert.equal(matchingQuests([base],prefs,['COMP 1021 · L1']).length,1);assert.equal(matchingQuests([base],prefs,['COMP 1021 · L2']).length,0);assert.equal(matchingQuests([{...base,lobby:'Library'}],prefs,[]).length,1);assert.equal(matchingQuests([{...base,hostId:'you'}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([{...base,participants:['a','b']}],prefs,['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{...prefs,enabled:false},['COMP 1021 · L1']).length,0);assert.equal(matchingQuests([base],{enabled:true,interests:['Cooking']},['COMP 1021 · L1']).length,0);});
@@ -115,4 +115,19 @@ test('Student names depend only on accepted hellos, not opening a profile or a p
  assert.equal(peerName(peer,accepted),peer.name);
  assert.equal(peerName(peer,JSON.parse(JSON.stringify(accepted))),peer.name);
  assert.equal(peerName(eligible('Library')[1]),'Unknown');
+});
+
+
+test('Hello acceptance is identical for live and presentation clocks and freezes while paused',()=>{
+ const pending={one:{status:'pending' as const,acceptedAt:2700,messages:[]}};
+ assert.equal(advanceHellos(pending,2699),pending);
+ assert.equal(advanceHellos(pending,5000,true),pending);
+ const accepted=advanceHellos(pending,2700);
+ assert.equal(accepted.one.status,'accepted');
+ assert.equal(accepted.one.messages.length,1);
+ assert.equal(advanceHellos(accepted,6000),accepted);
+ assert.equal(pending.one.status,'pending');
+ const epoch=Date.now();
+ const live=advanceHellos({one:{...pending.one,acceptedAt:epoch+2700}},epoch+2700);
+ assert.deepEqual(live.one.messages,accepted.one.messages);
 });
