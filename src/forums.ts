@@ -6,7 +6,13 @@ export function availableForums(profile:Profile):Forum[]{return [...[...new Set(
 export function canAccessForum(profile:Profile,id:string){return availableForums(profile).some(f=>f.id===id);}
 export function addForumPost(store:ForumStore,profile:Profile,forum:Forum,post:Post){if(!canAccessForum(profile,forum.id)||!post.title?.trim()||!post.text.trim())return store;return {...store,[forum.id]:[post,...(store[forum.id]||[])]};}
 export function addForumReply(store:ForumStore,profile:Profile,id:string,postId:string,text:string){if(!canAccessForum(profile,id)||!text.trim())return store;return {...store,[id]:(store[id]||[]).map(p=>p.id===postId?{...p,replies:[...p.replies,{author:profile.name,text:text.trim()}]}:p)};}
-export function meetingTopics(profile:Profile,peer:Peer){const overlap=profile.interests.filter(i=>peer.interests.includes(i));return [...overlap.map(i=>`You both enjoy ${i.toLowerCase()}. How did you first get into it?`),...(profile.classes.includes(peer.lobby)?[`What part of ${peer.lobby} are you finding most interesting?`]:[]),`What is your favourite spot on campus for a break?`,`What would you like to try together this semester?`].slice(0,4);}
+export function meetingTopics(profile:Profile,peer:Peer){
+ const overlap=[...new Set(profile.interests.filter(i=>peer.interests.includes(i)))];
+ const sharedClass=profile.classes.includes(peer.lobby);
+ const interestTopics=overlap.slice(0,sharedClass?3:4).map(i=>`You both enjoy ${i.toLowerCase()}. How did you first get into it?`);
+ const classTopics=sharedClass?[`What part of ${peer.lobby} are you finding most interesting?`]:[];
+ return [...interestTopics,...classTopics,`What is your favourite spot on campus for a break?`,`What would you like to try together this semester?`].slice(0,4);
+}
 
 export function toggleForumLike(store:ForumStore,profile:Profile,id:string,postId:string){if(!canAccessForum(profile,id)||!store[id]?.some(p=>p.id===postId))return store;return {...store,[id]:store[id].map(p=>p.id===postId?{...p,likedBy:(p.likedBy||[]).includes('you')?(p.likedBy||[]).filter(v=>v!=='you'):[...(p.likedBy||[]),'you']}:p)};}
 

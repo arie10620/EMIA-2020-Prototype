@@ -88,3 +88,8 @@ Posts created from the lobby return you to the room with a speech bubble above y
 Normal lobby use seeds three fictional posts per room and attempts a new random student post after about two seconds, then every 30-45 seconds while the room is open. Posts use nearby student identities and joined communities, with occasional sample replies. A 25-second quiet period after a recent room post prevents immediate interruptions. Posting pauses while another screen, chat, or popup is open. History is limited to eight fictional posts per room (or fewer when its sample topics run out), preserving user posts, replies, and likes. Rooms without an accessible community do not generate posts.
 
 The Lobby walkthrough chapter scripts student posts as it visits the classroom, Library, and Dorm. Demo chapters start with isolated fictional forum history; playback controls govern scripted posts, and exiting restores the saved real session. These posts are local sample data, not network activity.
+
+
+## Face-to-face conversation starters
+
+Open a personal conversation from Chats and select **Meet f2f** in its header (also available from the character chat's people icon). The popup suggests conversation starters from shared interests and, when both students belong to the same exact lecture section, their shared class. A class topic stays visible even with many shared interests. Campus icebreakers fill remaining space when there is less in common. Suggestions are generated locally from profile data.

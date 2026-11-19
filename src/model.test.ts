@@ -90,3 +90,17 @@ test('Random fictional posts use present students, respect sections, and have a 
 test('Lobby walkthrough includes fictional room posts across its location changes',()=>{
  const actions=demoEvents(4);assert.equal(actions.filter(event=>event.action==='room-post').length,3);
 });
+
+
+test('Face to face keeps the shared class alongside many shared interests and respects exact sections',()=>{
+ const peer=eligible(demo.classes[0])[0];
+ const profile={...demo,interests:[...peer.interests]};
+ const topics=meetingTopics(profile,peer);
+ assert.equal(topics.length,4);
+ assert.ok(topics.some(topic=>topic.includes(peer.lobby)));
+ assert.ok(topics.some(topic=>topic.includes(peer.interests[0].toLowerCase())));
+ const otherSection={...profile,classes:[peer.lobby.replace('L1','L2')]};
+ assert.ok(!meetingTopics(otherSection,peer).some(topic=>topic.includes(peer.lobby)));
+ const classOnly=meetingTopics({...profile,interests:[]},peer);
+ assert.ok(classOnly.some(topic=>topic.includes(peer.lobby)));
+});

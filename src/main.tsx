@@ -18,7 +18,18 @@ import '@fontsource/pixelify-sans/600.css';
 import './style.css';
 const KEY='ustogether-v1';
 function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch{return null;}}
-function App(){const [saved]=useState(read);const [profile,setProfile]=useState<Profile>(saved?.profile||{...demo,name:'',intro:'',interests:[],classes:[],avatar:{...defaultAvatar}});const [ready,setReady]=useState(!!saved?.ready);const [step,setStep]=useState(0);const [tab,setTab]=useState('Campus');const [location,setLocation]=useState(saved?.location||'Library');const [threads,setThreads]=useState<Record<string,Thread>>(saved?.threads||{});const [peer,setPeer]=useState<Peer|null>(null);const [chat,setChat]=useState<Peer|null>(null);const [editing,setEditing]=useState(false);const [orb,setOrb]=useState(false);const [text,setText]=useState('');const [typing,setTyping]=useState<string|null>(null);const [sound,setSound]=useState(false);const [reset,setReset]=useState(false);const bottom=useRef<HTMLDivElement>(null);
+function App(){
+useEffect(()=>{
+ const viewport=window.visualViewport;
+ const fitViewport=()=>{
+  if(!viewport||viewport.scale===1)document.documentElement.style.setProperty('--mobile-app-height',`${viewport?.height??window.innerHeight}px`);
+ };
+ fitViewport();
+ window.addEventListener('resize',fitViewport);
+ viewport?.addEventListener('resize',fitViewport);
+ return ()=>{window.removeEventListener('resize',fitViewport);viewport?.removeEventListener('resize',fitViewport);document.documentElement.style.removeProperty('--mobile-app-height');};
+},[]);
+const [saved]=useState(read);const [profile,setProfile]=useState<Profile>(saved?.profile||{...demo,name:'',intro:'',interests:[],classes:[],avatar:{...defaultAvatar}});const [ready,setReady]=useState(!!saved?.ready);const [step,setStep]=useState(0);const [tab,setTab]=useState('Campus');const [location,setLocation]=useState(saved?.location||'Library');const [threads,setThreads]=useState<Record<string,Thread>>(saved?.threads||{});const [peer,setPeer]=useState<Peer|null>(null);const [chat,setChat]=useState<Peer|null>(null);const [editing,setEditing]=useState(false);const [orb,setOrb]=useState(false);const [text,setText]=useState('');const [typing,setTyping]=useState<string|null>(null);const [sound,setSound]=useState(false);const [reset,setReset]=useState(false);const bottom=useRef<HTMLDivElement>(null);
 const [game,setGame]=useState<Game>(saved?.game?{...saved.game,quests:[...saved.game.quests,...initialGame.quests.filter(q=>!saved.game.quests.some((old:Quest)=>old.id===q.id))]}:initialGame),[known,setKnown]=useState<string[]>(saved?.known||[]),[worldChat,setWorldChat]=useState<Peer|null>(null),[helloTarget,setHelloTarget]=useState<string|null>(null),[levelToast,setLevelToast]=useState(false);
 const level=game.joined.length+1;
 const [forumStore,setForumStore]=useState<ForumStore>(saved?.forumStore||{}),[chatTab,setChatTab]=useState('Direct'),[meetPeer,setMeetPeer]=useState<Peer|null>(null),[forumAutomation,setForumAutomation]=useState<ForumAutomation|null>(null);
