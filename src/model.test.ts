@@ -1,4 +1,4 @@
-import {alexThread,demoFixture,demoScenarios} from './demoPlayback.ts';
+import {demoFixture,demoScenarios,tableTennisId} from './demoPlayback.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {courses,interests,demo,eligible,recommended,shared,reply,peerName,advanceHellos,pathTo,walkable,obstacles,roomPositions} from './model.ts';
@@ -82,34 +82,25 @@ test('Random fictional posts use present students, respect sections, and have a 
  const empty={};assert.equal(simulateRoomPost(empty,{...profile,interests:[],classes:[]},'Library',present,now),empty);
  assert.equal(simulateRoomPost(empty,profile,'Library',[],now),empty);
 });
-test('Each fictional persona starts a fresh scenario with an available quest',()=>{
- assert.deepEqual(demoScenarios.map(({name,year})=>[name,year]),[['Jamie',1],['Sam',2],['Alex',3]]);
+test('The three fictional scenarios fit a two-minute pass and start from isolated sample data',()=>{
+ assert.deepEqual(demoScenarios.map(({name,duration})=>[name,duration]),[['Sam',45000],['Jamie',20000],['Alex',55000]]);
+ assert.equal(demoScenarios.reduce((total,scenario)=>total+scenario.duration,0),120000);
  for(const scenario of demoScenarios){
-  const fixture=demoFixture(scenario,initialGame,100_000);
-  assert.equal(fixture.profile.name,scenario.name);
-  const quest=fixture.game.quests.find(quest=>quest.lobby===fixture.location)!;
-  assert.ok(quest);
   assert.ok(scenario.events.every((event,index)=>event.at<scenario.duration&&(!index||event.at>scenario.events[index-1].at)));
-  assert.ok(scenario.openerAt<scenario.duration);
-  fixture.profile.name='Edited';
+  const fixture=demoFixture(scenario,initialGame);
+  assert.equal(fixture.profile.name,scenario.name);
+  assert.ok(eligible(fixture.location).length);
   fixture.profile.classes.push('COMP 2011 · L3');
-  fixture.threads['example']={status:'accepted',acceptedAt:0,messages:[]};
-  fixture.game=joinQuest(fixture.game,quest.id);
-  const replay=demoFixture(scenario,initialGame,100_000);
-  assert.equal(replay.profile.name,scenario.name);
+  fixture.game.joined.push('example');
+  const replay=demoFixture(scenario,initialGame);
   assert.ok(!replay.profile.classes.includes('COMP 2011 · L3'));
-  assert.deepEqual(replay.threads,{});
   assert.deepEqual(replay.game.joined,[]);
  }
- const alex=demoFixture(demoScenarios[2],initialGame,100_000);
- const thread=alex.forumStore[`class:${alex.location}`][0];
- assert.equal(thread.id,alexThread);
- assert.equal(thread.author,eligible(alex.location).find(peer=>peer.id===thread.authorId)?.name);
- assert.deepEqual(thread.replies,[]);
- assert.ok(!initialGame.quests.some(quest=>quest.id==='demo-ai-review'));
+ const jamie=demoFixture(demoScenarios[1],initialGame);
+ assert.equal(jamie.notification?.id,tableTennisId);
+ assert.ok(!jamie.game.quests.some(quest=>quest.id===tableTennisId));
+ assert.ok(initialGame.quests.some(quest=>quest.id===tableTennisId));
 });
-
-
 test('Face to face keeps the shared class alongside many shared interests and respects exact sections',()=>{
  const peer=eligible(demo.classes[0])[0];
  const profile={...demo,interests:[...peer.interests]};

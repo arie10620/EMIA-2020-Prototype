@@ -364,6 +364,12 @@ export const interestPresets:Record<string,readonly Preset[]>={
 };
 
 export const coursePresets:Record<string,readonly Preset[]>={
+ "EMIA 2020": [
+  ["What campus problem should our {class} project tackle?","I’d start somewhere we can talk to students and see the problem firsthand."],
+  ["Who should we interview before we sketch ideas for {class}?","Someone who runs into the problem regularly would be a good start."],
+  ["What would be a quick prototype for our {class} project?","We could sketch it on paper and ask someone to try it before building anything."],
+  ["How should we divide up the research for {class}?","Let’s each bring one observation and one question to our next meeting."]
+ ],
  "COMP 1021": [
   [
    "For {class}, which Python idea has been most interesting so far?",

@@ -17,24 +17,15 @@ Open the localhost URL printed by Vite. For a production build, run `npm run bui
 
 ## Scenario walkthrough with fictional personas
 
-Open **Profile → Scenario walkthrough with fictional personas**. The demo starts with Jamie. Use the scenario picker to switch personas and begin at their first step. Each step loops independently, and you can pause or replay it. Open **Scenario notes** for the shared task, the setup, and the question to test with real students. On screens 1024px and wider, Demo Mode shows the active student profile, scenario goal, and walkthrough steps beside the phone. The step highlight follows playback and holds while paused. Use the left and right arrows to move between the three steps for the current persona. The progress bar has three equal sections. The active section fills and resets with each loop, while earlier sections stay filled.
+Open **Profile → Scenario walkthrough with fictional personas**. Each persona has one continuous progress bar. Playback moves automatically from Sam to Jamie to Alex, then starts over.
 
-**Shared task**
-
-“Find a quest you might join. Then show what you could say when you arrive.”
-
-| Fictional student | What the demo shows | What to test with real students |
+| Playback time | Fictional student | What the demo shows |
 | --- | --- | --- |
-| Jamie, Year 1 | Checks the venue and time for Table tennis doubles and tries an arrival opener. Jamie worries about interrupting a group that may already know one another. | Can students find a meetup they’d join, and can they tell whether newcomers are welcome? |
-| Sam, Year 2 | Joins a Python practice quest, connects with someone from the same lecture, and opens Meet F2F for a shared-class starter. | Would students feel comfortable saying a suggested shared-class opener out loud? |
-| Alex, Year 3 | Finds an AI lecture meetup, browses the classroom forum, and replies to a thread about what to bring. | Does following a classroom discussion give students a reason to open USTogether again? |
+| 0:00–0:45 | Sam, Year 2 | Sends a hello to an EMIA 2020 classmate, talks about forming a project group in Chats, and opens Meet F2F to prepare for a meeting before lecture. |
+| 0:45–1:05 | Jamie, Year 1 | Receives a table-tennis quest notification, opens the quest, checks the time and venue, and accepts. |
+| 1:05–2:00 | Alex, Year 3 | Posts a homework question, thanks the classmate who helps, and follows up in chat before meeting in class. |
 
-**Presentation takeaway**
-
-“We walked through three fictional scenarios to identify what to test next: whether students can find a meetup they’d join, whether the suggested openers feel natural, and whether the forum gives them a reason to return.”
-
-Interacting with the app or opening Scenario notes pauses playback. Reduced-motion preferences start the demo paused. Demo progress is isolated from browser storage, and exiting restores the previous session.
-
+Use the persona picker to jump to a story, or Replay to restart the active one. Interacting with the app pauses playback. Reduced-motion preferences start the demo paused. The desktop panel shows the active scenario and fictional profile beside the phone. Demo progress is isolated from browser storage, and exiting restores the previous session.
 ## Updated interactions
 
 Student presence, invitation acceptance, and topic-based replies are simulated locally. Profile, appearance, selected sections, pending invitations, and conversations persist in browser localStorage. The prototype runs without authentication, GPS, or a messaging backend. Sound is off by default.
@@ -54,7 +45,7 @@ Student presence, invitation acceptance, and topic-based replies are simulated l
 
 The lobby now has one location/lecture dropdown. Quests, students, and alerts are optional icon-triggered popups, with a close button, backdrop dismissal, and Escape support. Levels appear in the header profile chip and above characters. All profile headings use the bundled pixel font.
 
-Course selection searches nine fictional sample courses by title or code and supports exact lecture sections. Existing classroom, library, and dorm student IDs are preserved.
+Course selection searches ten fictional sample courses by title or code and supports exact lecture sections. Existing classroom, library, and dorm student IDs are preserved.
 
 New quests require at least one interest tag. In Profile → Quest alert interests, select independent notification interests or copy your profile interests. Matching, open quests in campus-wide locations and selected exact sections appear as in-app alerts; your own and full quests are excluded. Preferences and read state persist. Notifications run only while the prototype is open. **Preview a quest alert** creates a fictional matching quest for presentation testing.
 
@@ -106,6 +97,6 @@ Run `npm test` for model checks and `npm run test:browser` for Chromium/WebKit i
 
 ## Preset conversation library
 
-Chat and Meet f2f share 132 locally written starters and matching simulated replies: four for each of the 20 interests, four for each of the nine sample courses (using the exact shared lecture section), and 16 across campus life, study habits, weekend plans, and meetup ideas. Suggested sets rotate with **More ideas**, keeping shared interests and a shared class first. The topic picker also lets students explore other interests without labeling them as shared.
+Chat and Meet f2f share 136 locally written starters and matching simulated replies: four for each of the 20 interests, four for each of the ten sample courses (using the exact shared lecture section), and 16 across campus life, study habits, weekend plans, and meetup ideas. Suggested sets rotate with **More ideas**, keeping shared interests and a shared class first. The topic picker also lets students explore other interests without labeling them as shared.
 
 In personal chat, select **More ideas**; in character chat, use the sparkle button. **Send this starter** sends the selected question and gets its matching preset reply. **Meet f2f** uses the same topic library for in-person conversation and does not send a message. Both normal use and demo playback share these components and data. No external AI service is involved.

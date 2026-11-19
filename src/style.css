@@ -38,11 +38,8 @@
 .demo-strip-controls{display:flex;align-items:center;gap:6px}
 .demo-strip-controls>button{display:grid;place-items:center;min-width:33px;height:35px;background:#f8f9ef;border:1px solid #c6d4b1;border-radius:6px;padding:0;color:#607b4d}
 .demo-strip-controls select{display:block;min-width:0;flex:1;height:35px;background:#f8f9ef;border:1px solid #c6d4b1;border-radius:6px;padding:5px 6px;font:inherit;font-size:12px;color:#526e40}
-.demo-loop-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:7px}
-.demo-loop-segment{height:5px;border-radius:3px;background:#dce3cd;overflow:hidden}
-.demo-loop-segment>span{height:100%;display:block;background:#9caf7b}
-.demo-loop-segment[data-state="current"]{background:#cfd9be}
-.demo-loop-segment[data-state="current"]>span{background:#708b56}
+.demo-loop-track{height:5px;border-radius:3px;background:#dce3cd;overflow:hidden;margin-top:7px}
+.demo-loop-track>span{height:100%;display:block;background:#708b56}
 
 
 
@@ -280,11 +277,6 @@
 .starter-scroll .starter-more{display:flex;align-items:center;gap:6px;flex-shrink:0;background:#e8efdc;border-color:#bdcdaa;color:#49694f}
 
 .demo-strip-top>strong{font-size:12px;color:#405937}
-.demo-walkthrough-status{display:flex;justify-content:space-between;align-items:center;margin-top:3px;font-size:11px;color:#526b43}
-.demo-walkthrough-status>button{color:inherit;text-decoration:underline;padding:3px 0}
-.demo-arrival,.demo-scenario-notes p{margin:6px 0;font-size:12px;line-height:1.35;color:#405937}
-.demo-arrival strong,.demo-scenario-notes strong{margin-right:.25em}
-.demo-scenario-notes{max-height:28vh;overflow:auto;overscroll-behavior:contain;margin-top:6px;padding:3px 8px;background:#f8f9ef;border-radius:6px}
 .phone[data-session="demo"] .popup-backdrop{padding-top:var(--demo-content-top)}
 .phone[data-session="demo"]>.overlay{top:var(--demo-content-top);padding-top:0}
 .phone[data-session="demo"]>.overlay>.dialogue{max-height:100%}
@@ -322,14 +314,4 @@
  .demo-scenario-panel h2{margin:0 0 6px;font-size:.875rem;font-weight:700;color:#405840}
  .demo-scenario-steps ul{margin:0;padding:0;list-style:none;color:#52664e}
  .demo-scenario-steps li{padding:7px 6px;line-height:1.35}
- .demo-scenario-steps li[aria-current="step"]{
-  border-radius:5px;
-  background:#d9e4cd;
-  color:#283e2c;
-  font-weight:700;
- }
 }
-
-.demo-step-title{min-width:0;color:#405937;font-size:12px;line-height:1.25}
-.demo-walkthrough-status{gap:8px}
-.demo-walkthrough-status>span,.demo-walkthrough-status>button{flex:none}

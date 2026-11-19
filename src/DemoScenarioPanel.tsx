@@ -1,6 +1,6 @@
 import type {Scenario} from './demoPlayback';
 
-export default function DemoScenarioPanel({scenario,current}:{scenario:Scenario;current:number}) {
+export default function DemoScenarioPanel({scenario}:{scenario:Scenario}) {
  return <aside
   className="demo-scenario-panel"
   aria-label="User scenario and profile"
@@ -22,9 +22,9 @@ export default function DemoScenarioPanel({scenario,current}:{scenario:Scenario;
   </div>
 
   <div className="demo-scenario-steps">
-   <h2>Walkthrough steps</h2>
+   <h2>What the demo shows</h2>
    <ul>
-    {scenario.steps.map((step,index)=><li key={step.label} aria-current={current===index?'step':undefined}>{step.label}</li>)}
+    {scenario.highlights.map(highlight=><li key={highlight}>{highlight}</li>)}
    </ul>
   </div>
  </aside>;

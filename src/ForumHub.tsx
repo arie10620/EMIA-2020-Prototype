@@ -5,7 +5,10 @@ import {Plus,BookOpen,CircleDot,Heart,Network,MessageCircle,Send,X} from 'lucide
 import Avatar from './Avatar';
 import {availableForums,communityName,forumFeed,addForumPost,addForumReply,toggleForumLike,type ForumStore} from './forums';
 import type {Profile} from './model';
-export type ForumAutomation={action:'draft';postId:string;text:string}|{action:'reply';postId:string};
+export type ForumAutomation =
+ | {action:'title';text:string}|{action:'body';text:string}
+ | {action:'publish';postId:string}|{action:'reply';postId:string}
+ | {action:'draft';postId:string;text:string};
 export default function Forums({profile,store,onChange,onEdit,automation,initialCommunity=null,initialPost=null,startComposing=false,embedded=false,postLocation,onPublished,now}:{profile:Profile;store:ForumStore;onChange:(store:ForumStore)=>void;onEdit:(step:number)=>void;automation?:ForumAutomation|null;initialCommunity?:string|null;initialPost?:string|null;startComposing?:boolean;embedded?:boolean;postLocation?:string;onPublished?:()=>void;now?:number}){
  const [activePost,setActivePost]=useState<string|null>(initialPost);
  const [selected,setSelected]=useState<string|null>(initialCommunity),[composing,setComposing]=useState(startComposing),[destination,setDestination]=useState(''),[title,setTitle]=useState(''),[body,setBody]=useState(''),[expanded,setExpanded]=useState<string[]>(initialPost?[initialPost]:[]),[drafts,setDrafts]=useState<Record<string,string>>({});
@@ -13,14 +16,23 @@ export default function Forums({profile,store,onChange,onEdit,automation,initial
  useEffect(()=>{targetPost.current?.scrollIntoView({block:'start'});},[]);
  const trigger=useRef<HTMLButtonElement>(null),first=useRef<HTMLElement|null>(null);
  const forums=availableForums(profile),filter=forums.find(f=>f.id===selected),forum=forums.find(f=>f.id===(filter?.id||destination))||forums[0],feed=forumFeed(profile,store,filter?.id||null).filter(entry=>!activePost||entry.post.id===activePost),posts=feed.map(entry=>entry.post);
- const publish=()=>{if(!forum||!title.trim()||!body.trim())return;onChange(addForumPost(store,profile,forum,{id:crypto.randomUUID(),title:title.trim(),text:body.trim(),author:profile.name,authorId:'you',room:forum.kind==='class'?forum.name:postLocation,createdAt:now??Date.now(),likedBy:[],replies:[]}));setTitle('');setBody('');setComposing(false);setActivePost(null);onPublished?.();};
+ const publish=(id:string=crypto.randomUUID())=>{if(!forum||!title.trim()||!body.trim())return;onChange(addForumPost(store,profile,forum,{id,title:title.trim(),text:body.trim(),author:profile.name,authorId:'you',room:forum.kind==='class'?forum.name:postLocation,createdAt:now??Date.now(),likedBy:[],replies:[]}));setTitle('');setBody('');setComposing(false);setActivePost(null);onPublished?.();};
  const comment=(id:string,community=feed.find(e=>e.post.id===id)?.forum.id)=>{if(!community||!drafts[id]?.trim())return;onChange(addForumReply(store,profile,community,id,drafts[id]));setDrafts(d=>({...d,[id]:''}));};
  useEffect(()=>{
-  if(!automation||activePost!==automation.postId)return;
-  if(automation.action==='draft')setDrafts(previous=>({...previous,[automation.postId]:automation.text}));
-  else comment(automation.postId);
+  if(!automation)return;
+  switch(automation.action){
+   case 'title':setTitle(automation.text);break;
+   case 'body':setBody(automation.text);break;
+   case 'publish':publish(automation.postId);break;
+   case 'draft':
+    if(activePost===automation.postId)setDrafts(previous=>({...previous,[automation.postId]:automation.text}));
+    break;
+   case 'reply':
+    if(activePost===automation.postId)comment(automation.postId);
+    break;
+  }
  },[automation]);
- const demoReplyAction=automation&&activePost===automation.postId?automation.action:undefined;
+ const demoReplyAction=automation&&(automation.action==='draft'||automation.action==='reply')&&activePost===automation.postId?automation.action:undefined;
  useEffect(()=>{
   if(demoReplyAction)first.current?.querySelector('.social-comment-compose')?.scrollIntoView({block:'nearest'});
  },[demoReplyAction]);

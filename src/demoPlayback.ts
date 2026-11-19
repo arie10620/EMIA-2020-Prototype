@@ -1,23 +1,17 @@
 import {demo} from './model.ts';
-import type {Profile,Thread} from './model.ts';
-import type {Game,Quest} from './quests';
-import type {ForumStore} from './forums';
+import type {Game} from './quests';
 
 export const walkthroughTitle = 'Scenario walkthrough with fictional personas';
-export const walkthroughTask = 'Find a quest you might join. Then show what you could say when you arrive.';
-export const walkthroughTakeaway = 'We walked through three fictional scenarios to identify what to test next: whether students can find a meetup they’d join, whether the suggested openers feel natural, and whether the forum gives them a reason to return.';
+export const alexThread = 'demo-alex-homework';
+export const tableTennisId = 'table-tennis';
+const designClass = 'EMIA 2020 · L1';
+const programmingClass = 'COMP 1021 · L1';
 
+type DraftAction = 'chat-draft'|'forum-title'|'forum-body'|'forum-draft';
 type DemoEvent =
- | {at:number;action:'quests'|'students'|'introduction'|'hello'|'meet'|'class-forum'|'forum-reply'}
- | {at:number;action:'focus-quest'|'accept-quest';questId:string}
- | {at:number;action:'forum-draft';text:string};
-
-type StepView =
- | {kind:'quests';focusQuest?:string}
- | {kind:'campus'|'chat';joinedQuest:string}
- | {kind:'thread';thread:string};
-
-type ScenarioStep = {label:string;startsAt:number;view?:StepView};
+ | {at:number;action:'introduction'|'hello'|'chats'|'open-chat'|'meet'|'classroom'|'quest-notification'|'open-alert'|'focus-quest'|'accept-quest'|'forum-compose'|'forum-publish'|'forum-open'|'forum-reply'}
+ | {at:number;action:DraftAction|'classmate-reply';text:string}
+ | {at:number;action:'chat-send';reply:string};
 
 export type Scenario = {
  name:string;
@@ -27,117 +21,85 @@ export type Scenario = {
  bio:string;
  traits:string[];
  goal:string;
- steps:[ScenarioStep,ScenarioStep,ScenarioStep];
- setup:string;
- hypothesis:string;
- testQuestion:string;
- opener:string;
- openerAt:number;
+ highlights:string[];
  location:string;
  interests:string[];
  duration:number;
  events:DemoEvent[];
 };
 
-const pythonClass = 'COMP 1021 · L1';
-const aiClass = 'COMP 2211 · L1';
-export const alexThread = 'demo-alex-class-discussion';
-const alexQuest:Quest = {
- id:'demo-ai-review',lobby:aiClass,hostId:'p11-0',hostName:'Ivy',
- title:'Compare AI lecture examples',place:'Library · Learning Commons',when:'Today · 5:00 PM',
- details:'Bring one example from the lecture you’d like to go over.',capacity:3,participants:[],interests:['Programming'],
-};
-
-function typeForumReply(text:string,start:number):DemoEvent[] {
+function typeDraft(action:DraftAction,text:string,start:number):DemoEvent[] {
  let at=start,draft='';
- const characters:DemoEvent[]=Array.from(text,(character,index)=>{
+ return Array.from(text,(character,index)=>{
   draft+=character;
-  const cue:DemoEvent={at,action:'forum-draft',text:draft};
-  // Keep cues on the playback clock and pause briefly at word and sentence breaks.
-  at+=/[.!?]/.test(character)?400:character===' '||index%7===5?200:100;
+  const cue:DemoEvent={at,action,text:draft};
+  at+=/[.!?]/.test(character)?300:character===' '||index%8===6?200:100;
   return cue;
  });
- return [...characters,{at:at+700,action:'forum-reply'}];
 }
 
 export const demoScenarios:Scenario[] = [
  {
-  name:'Jamie',year:1,title:'Table tennis',headline:'Meet through a shared activity',
+  name:'Sam',year:2,title:'Project groupmate',headline:'Find a project groupmate',
+  bio:'Sam needs a groupmate for a cross-disciplinary design project.',
+  traits:['EMIA 2020','Cross-Disciplinary Design Thinking'],
+  goal:'Compare ideas with a classmate online and arrange to meet before lecture.',
+  highlights:['Send a hello to a classmate','Talk about the project in Chats','Find an opener in Meet F2F'],
+  location:designClass,interests:['Design'],duration:45000,
+  events:[
+   {at:1200,action:'introduction'},{at:3200,action:'hello'},{at:6800,action:'chats'},{at:8300,action:'open-chat'},
+   ...typeDraft('chat-draft','Hey, are you in EMIA 2020 too?',9500),
+   {at:14000,action:'chat-send',reply:'Yeah! Still looking for a group too.'},
+   ...typeDraft('chat-draft','Want to design something for campus?',17500),
+   {at:22500,action:'chat-send',reply:'I’m in. Maybe we could make campus signs easier to follow.'},
+   ...typeDraft('chat-draft','Meet before lecture to sketch ideas?',26800),
+   {at:32000,action:'chat-send',reply:'Sounds good! See you outside the classroom.'},
+   {at:37500,action:'meet'},
+  ],
+ },
+ {
+  name:'Jamie',year:1,title:'Table-tennis quest',headline:'Meet through a shared activity',
   bio:'Jamie enjoys table tennis and worries about interrupting a group that already knows each other.',
   traits:['Table tennis','New to campus'],
-  goal:'Find a casual meetup with classmates and think of something to say on arrival.',
-  steps:[
-   {label:'Open the quest board',startsAt:0},
-   {label:'Check the time and venue',startsAt:6000,view:{kind:'quests'}},
-   {label:'Try an arrival opener',startsAt:13000,view:{kind:'quests',focusQuest:'table-tennis'}},
-  ],
-  setup:'Jamie wants to meet classmates but worries about interrupting a group. Jamie checks the time and venue for a table-tennis quest.',
-  hypothesis:'A shared activity gives Jamie a reason to turn up. Jamie might still hesitate if it’s unclear whether the others already know one another.',
-  testQuestion:'Can students find a meetup they’d join, and can they tell whether newcomers are welcome?',
-  opener:'Hi, I’m Jamie. Is this the table-tennis group? Mind if I join?',
-  openerAt:13700,location:'Library',interests:['Table tennis'],duration:22000,
-  events:[{at:700,action:'quests'},{at:6700,action:'focus-quest',questId:'table-tennis'}],
- },
- {
-  name:'Sam',year:2,title:'Meet F2F',headline:'Start with a shared class',
-  bio:'Sam wants to connect with someone from the same programming lecture.',
-  traits:['Programming','COMP 1021 · L1'],
-  goal:'Find a study partner and get a class-specific opener for meeting in person.',
-  steps:[
-   {label:'Join Python practice',startsAt:0},
-   {label:'Say hello to a classmate',startsAt:7000,view:{kind:'campus',joinedQuest:'study-buddy'}},
-   {label:'Open Meet F2F',startsAt:16500,view:{kind:'chat',joinedQuest:'study-buddy'}},
-  ],
-  setup:'Sam wants a study partner from the same lecture. Sam finds a Python practice quest and opens Meet F2F for something to say.',
-  hypothesis:'A prompt tied to a shared lecture could give Sam a specific way to start the conversation.',
-  testQuestion:'Would students feel comfortable saying a suggested shared-class opener out loud?',
-  opener:'For COMP 1021 · L1, which Python idea has been most interesting so far?',
-  openerAt:17200,location:pythonClass,interests:['Programming'],duration:24500,
+  goal:'Find a casual meetup and accept a quest with an open spot.',
+  highlights:['Receive a matching quest notification','Check the time and venue','Accept the table-tennis quest'],
+  location:'Library',interests:['Table tennis'],duration:20000,
   events:[
-   {at:700,action:'quests'},{at:3800,action:'accept-quest',questId:'study-buddy'},
-   {at:7700,action:'students'},{at:8800,action:'introduction'},{at:10100,action:'hello'},{at:17200,action:'meet'},
+   {at:2400,action:'quest-notification'},{at:6500,action:'open-alert'},
+   {at:7200,action:'focus-quest'},{at:12800,action:'accept-quest'},
   ],
  },
  {
-  name:'Alex',year:3,title:'Class forum',headline:'Join the conversation in the forum',
-  bio:'Alex is open to meeting classmates and rarely checks campus apps.',
-  traits:['AI coursework','COMP 2211 · L1'],
-  goal:'Find a class meetup and join a group conversation before meeting in person.',
-  steps:[
-   {label:'Find the lecture meetup',startsAt:0},
-   {label:'Open the classroom discussion',startsAt:6000},
-   {label:'Reply to the thread',startsAt:13000,view:{kind:'thread',thread:alexThread}},
-  ],
-  setup:'Alex is open to meeting people but rarely checks campus apps. Alex finds an AI lecture meetup and browses the classroom forum for a discussion worth replying to.',
-  hypothesis:'The forum gives Alex a way into a group conversation before approaching anyone individually.',
-  testQuestion:'Does following a classroom discussion give students a reason to open USTogether again?',
-  opener:'I’ll bring the spam-filter example. Which example did you pick?',
-  openerAt:16900,location:aiClass,interests:['Programming'],duration:36500,
+  name:'Alex',year:3,title:'Homework and classmates',headline:'A homework question can start a friendship',
+  bio:'Alex is open to meeting classmates and rarely checks campus apps. A stuck homework question gives Alex a reason to try the class forum.',
+  traits:['COMP 1021','Python homework'],
+  goal:'Get unstuck, thank the classmate who helped, and meet in the next lecture.',
+  highlights:['Ask a homework question in the class forum','Send a hello to the classmate who replies','Keep talking in Chats and meet in class'],
+  location:programmingClass,interests:['Programming'],duration:55000,
   events:[
-   {at:700,action:'quests'},{at:6700,action:'class-forum'},
-   ...typeForumReply('I’ll bring the spam-filter example to the meetup. Which example did everyone else pick?',15700),
+   {at:1300,action:'forum-compose'},
+   ...typeDraft('forum-title','Stuck on Q3',2300),
+   ...typeDraft('forum-body','How do I loop through a list?',4600),
+   {at:9100,action:'forum-publish'},{at:10600,action:'forum-open'},
+   {at:12600,action:'classmate-reply',text:'Try a for loop over the list. No index needed.'},
+   ...typeDraft('forum-draft','That worked, thanks!',14700),
+   {at:17900,action:'forum-reply'},
+   {at:19400,action:'classmate-reply',text:'Nice! I’ll be in lecture tomorrow if you want to compare notes.'},
+   {at:21800,action:'introduction'},{at:23500,action:'hello'},{at:27000,action:'chats'},{at:28200,action:'open-chat'},
+   ...typeDraft('chat-draft','Thanks for helping on Q3!',29600),
+   {at:33400,action:'chat-send',reply:'Anytime! That one took me a while too.'},
+   ...typeDraft('chat-draft','Want to sit together in lecture?',37400),
+   {at:41900,action:'chat-send',reply:'Sure! I’ll save you a seat.'},
+   {at:46700,action:'meet'},{at:51600,action:'classroom'},
   ],
  },
 ];
 
-export function demoPlaybackRange(scenario:Scenario,step:number) {
- return {
-  start:scenario.steps[step].startsAt,
-  end:scenario.steps[step+1]?.startsAt??scenario.duration,
- };
-}
-export function demoFixture(scenario:Scenario,game:Game,now:number) {
- const {name,setup,interests,location} = scenario;
- const profile:Profile = {...demo,name,intro:setup,interests:[...interests],classes:location==='Library'?[]:[location],avatar:{...demo.avatar}};
- const seededGame = structuredClone(game);
- const forumStore:ForumStore = {};
- if (location===aiClass) {
-  seededGame.quests.unshift(structuredClone(alexQuest));
-  forumStore[`class:${aiClass}`] = [{
-   id:alexThread,title:'Which AI example should we bring?',
-   text:'For the lecture review meetup, I’m bringing the recommendation example. What would you like to compare?',
-   author:alexQuest.hostName,authorId:alexQuest.hostId,room:location,simulated:true,createdAt:now-60000,replies:[],
-  }];
- }
- return {profile,location,game:seededGame,threads:{} as Record<string,Thread>,forumStore};
+export function demoFixture(scenario:Scenario,game:Game) {
+ const {name,bio,interests,location} = scenario;
+ const profile={...demo,name,intro:bio,interests:[...interests],classes:location==='Library'?[]:[location],avatar:{...demo.avatar}};
+ const seededGame=structuredClone(game);
+ const notification=location==='Library'?seededGame.quests.find(quest=>quest.id===tableTennisId):undefined;
+ if(notification)seededGame.quests=seededGame.quests.filter(quest=>quest.id!==tableTennisId);
+ return {profile,location,game:seededGame,notification};
 }
