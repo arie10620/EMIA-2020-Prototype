@@ -77,21 +77,27 @@ test('the three fictional scenarios use the live quest, Meet F2F and classroom d
  expect(errors).toEqual([]);
 });
 
-test('each persona has three selectable steps that open the live app at the right stage',async({page})=>{
+test('each persona has three selectable steps and playback loops the selected step',async({page})=>{
  await start(page);
  const saved=await stored(page);
  await enterDemo(page);
  const toolbar=page.getByRole('region',{name:'Scenario walkthrough with fictional personas'});
- const steps=toolbar.getByRole('group',{name:'Walkthrough steps'}).getByRole('button');
+ const steps=toolbar.getByRole('group',{name:'Walkthrough steps'}).getByRole('button',{name:/^Step /});
  const jump=async(index:number,dialog:string)=>{
   await steps.nth(index).click();
   await expect(steps.nth(index)).toHaveAttribute('aria-current','step');
+  await expect(steps.nth(index)).toHaveAttribute('aria-pressed','true');
   await expect(toolbar.getByRole('button',{name:'Play demo animation'})).toBeVisible();
   return page.getByRole('dialog',{name:dialog,exact:true});
  };
 
  await expect(steps).toHaveCount(3);
  await expect(await jump(0,'Lobby quests')).toBeVisible();
+ await toolbar.getByRole('button',{name:'Play demo animation'}).click();
+ await page.clock.runFor(2300);
+ await expect(steps.nth(0)).toHaveAttribute('aria-current','step');
+ await expect(toolbar.getByText('Playing · Loop 2',{exact:true})).toBeVisible();
+ await toolbar.getByRole('button',{name:'Pause demo animation'}).click();
  const tennis=await jump(1,'Lobby quests');
  await expect(tennis.getByText('LG1 · Court 4',{exact:true})).toBeInViewport();
  await expect(await jump(2,'Lobby quests')).toBeVisible();
@@ -111,6 +117,17 @@ test('each persona has three selectable steps that open the live app at the righ
  await toolbar.getByRole('button',{name:'Play demo animation'}).click();
  await page.clock.runFor(alexReplyAt-stepStart(alex,alex.steps[2])+400);
  await expect(thread.locator('.social-comment')).toContainText('spam-filter example');
+ await page.clock.runFor(alex.duration-alexReplyAt+200);
+ await expect(toolbar.getByText('Playing · Loop 2',{exact:true})).toBeVisible();
+ await expect(steps.nth(2)).toHaveAttribute('aria-pressed','true');
+ await expect(thread.getByRole('textbox',{name:'Write a comment'})).toHaveValue('');
+ await expect(thread.locator('.social-comment')).toHaveCount(0);
+
+ const full=toolbar.getByRole('button',{name:'Full walkthrough'});
+ await full.click();
+ await expect(full).toHaveAttribute('aria-pressed','true');
+ await expect(steps.nth(0)).toHaveAttribute('aria-current','step');
+ await expect(toolbar.getByRole('progressbar',{name:'Scenario loop progress'})).toBeVisible();
  await toolbar.getByRole('button',{name:'Exit demo walkthrough'}).click();
  expect(await stored(page)).toEqual(saved);
 });

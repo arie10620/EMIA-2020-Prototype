@@ -127,6 +127,15 @@ export function stepStart(scenario:Scenario,step:ScenarioStep) {
   : scenario.events.find(event=>event.action===step.startsOn)!.at;
 }
 
+export function demoPlaybackRange(scenario:Scenario,selectedStep?:number) {
+ if(selectedStep===undefined)return {start:0,end:scenario.duration};
+ const nextStep=scenario.steps[selectedStep+1];
+ return {
+  start:stepStart(scenario,scenario.steps[selectedStep]),
+  end:nextStep?stepStart(scenario,nextStep):scenario.duration,
+ };
+}
+
 export function currentDemoStep(scenario:Scenario,time:number) {
  return scenario.steps.reduce((active,step,index)=>time>=stepStart(scenario,step)?index:active,0);
 }

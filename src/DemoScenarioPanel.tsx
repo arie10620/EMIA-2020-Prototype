@@ -1,6 +1,6 @@
 import type {Scenario} from './demoPlayback';
 
-export default function DemoScenarioPanel({scenario,current,onStep}:{scenario:Scenario;current:number;onStep:(index:number)=>void}) {
+export default function DemoScenarioPanel({scenario,current,selected,onStep}:{scenario:Scenario;current:number;selected?:number;onStep:(index:number)=>void}) {
  return <aside
   className="demo-scenario-panel"
   aria-label="User scenario and profile"
@@ -24,7 +24,7 @@ export default function DemoScenarioPanel({scenario,current,onStep}:{scenario:Sc
   <div className="demo-scenario-steps">
    <h2>Walkthrough steps</h2>
    <ol>
-    {scenario.steps.map((step,index)=><li key={step.label} aria-current={current===index?'step':undefined}><button onClick={()=>onStep(index)}>{step.label}</button></li>)}
+    {scenario.steps.map((step,index)=><li key={step.label} aria-current={current===index?'step':undefined}><button aria-pressed={selected===index} onClick={()=>onStep(index)}>{step.label}</button></li>)}
    </ol>
   </div>
  </aside>;

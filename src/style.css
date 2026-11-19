@@ -337,7 +337,8 @@
  background:#f8f9ef;
  color:#405840;
 }
-.demo-step-controls button[aria-current="step"]{background:#d9e4cd;border-color:#73886a;font-weight:700}
+.demo-step-controls button[aria-current="step"]{background:#e5ecd9}
+.demo-step-controls button[aria-pressed="true"]{background:#d9e4cd;border-color:#73886a;font-weight:700}
 
 @media (min-width:1024px){
  .demo-scenario-steps li{padding:0}
